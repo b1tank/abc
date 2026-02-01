@@ -50,13 +50,13 @@ function randomColor() {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 function randomSize() {
-  return 40 + Math.random() * 40; // 40-80px
+  return 60 + Math.random() * 60; // 60-120px
 }
 function randomEllipseRatio() {
   // a: horizontal radius, b: vertical radius
-  // Tall: a/b = 0.3-0.5, b = 0.9-1.2
-  const aRatio = 0.3 + Math.random() * 0.2; // 0.3-0.5
-  const bRatio = 0.9 + Math.random() * 0.3; // 0.9-1.2
+  // Consistently tall and narrow balloons
+  const aRatio = 0.55 + Math.random() * 0.15; // 0.55-0.7 (narrow but not too narrow)
+  const bRatio = 1.2 + Math.random() * 0.3;   // 1.2-1.5 (consistently tall)
   return { aRatio, bRatio };
 }
 
