@@ -1,5 +1,5 @@
 services:
-  abcballoon:
+  abc:
     container_name: ${APP_NAME}
     image: ${ACR_NAME}.azurecr.io/${APP_NAME}:latest
     ports:
