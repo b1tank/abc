@@ -6,7 +6,6 @@ const scoreDisplay = document.getElementById('score-display');
 const statsToggle = document.getElementById('statsToggle');
 const statsPanel = document.getElementById('stats-panel');
 const letterGrid = document.getElementById('letter-grid');
-const colorGrid = document.getElementById('color-grid');
 
 let gameActive = false;
 let balloons = [];
@@ -18,8 +17,7 @@ const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 
 // Popping effect particles
 let popParticles = [];
 let touchScore = 0;
-let poppedLetters = new Set();
-let colorCounts = {};
+let letterStats = {}; // { A: { color: '#FF5252', count: 3 }, ... }
 
 // ── Stats panel UI ──
 function buildLetterGrid() {
@@ -27,27 +25,31 @@ function buildLetterGrid() {
   for (const l of letters) {
     const cell = document.createElement('div');
     cell.className = 'letter-cell';
-    cell.textContent = l;
     cell.id = 'lc-' + l;
+    cell.innerHTML = '<span class="lc-letter">' + l + '</span><span class="lc-count"></span>';
     letterGrid.appendChild(cell);
   }
 }
 
 function updateStatsUI() {
   scoreDisplay.textContent = '⭐ ' + touchScore;
-  // Update letter grid
   for (const l of letters) {
     const cell = document.getElementById('lc-' + l);
-    if (cell) cell.className = poppedLetters.has(l) ? 'letter-cell popped' : 'letter-cell';
-  }
-  // Update color grid — show top 5 colors
-  const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  colorGrid.innerHTML = '';
-  for (const [color, count] of sorted) {
-    const dot = document.createElement('div');
-    dot.className = 'color-dot';
-    dot.innerHTML = '<span class="dot" style="background:' + color + '"></span>' + count;
-    colorGrid.appendChild(dot);
+    if (!cell) continue;
+    const stat = letterStats[l];
+    if (stat) {
+      cell.className = 'letter-cell popped';
+      cell.style.background = stat.color;
+      cell.style.color = '#fff';
+      const countEl = cell.querySelector('.lc-count');
+      if (countEl) countEl.textContent = stat.count;
+    } else {
+      cell.className = 'letter-cell';
+      cell.style.background = '';
+      cell.style.color = '';
+      const countEl = cell.querySelector('.lc-count');
+      if (countEl) countEl.textContent = '';
+    }
   }
 }
 
@@ -269,8 +271,7 @@ function startGame() {
   balloons = [];
   popParticles = [];
   touchScore = 0;
-  poppedLetters = new Set();
-  colorCounts = {};
+  letterStats = {};
   updateStatsUI();
   startBtn.disabled = true;
   restartBtn.disabled = false;
@@ -365,8 +366,9 @@ function handleCanvasInteraction(x, y) {
         touchScore++;
       }
       // Track stats
-      poppedLetters.add(popped.letter);
-      colorCounts[popped.color] = (colorCounts[popped.color] || 0) + 1;
+      if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
+      letterStats[popped.letter].color = popped.color;
+      letterStats[popped.letter].count++;
       updateStatsUI();
       // Touch mode: don't auto-respawn — letter returns to available pool
       return;

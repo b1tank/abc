@@ -76,7 +76,6 @@ body {
 }
 
 #stats-letters { flex: 1; }
-#stats-colors { flex: 0 0 auto; min-width: 80px; }
 
 #letter-grid {
   display: grid;
@@ -84,6 +83,7 @@ body {
   gap: 2px;
 }
 #letter-grid .letter-cell {
+  position: relative;
   width: 100%; aspect-ratio: 1;
   display: flex; align-items: center; justify-content: center;
   font-size: 10px; font-weight: 700;
@@ -93,23 +93,16 @@ body {
   transition: all 0.2s;
 }
 #letter-grid .letter-cell.popped {
-  background: #69F0AE;
-  color: #1b5e20;
+  color: #fff;
 }
-
-#color-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-#color-grid .color-dot {
-  display: flex; align-items: center; gap: 3px;
-  font-size: 10px; color: #666; font-weight: 600;
-}
-#color-grid .color-dot .dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  display: inline-block;
+.lc-letter { position: relative; z-index: 1; }
+.lc-count {
+  position: absolute;
+  top: -1px; right: -1px;
+  font-size: 7px; font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  line-height: 1;
+  z-index: 2;
 }
 
 /* ── Canvas ── */
