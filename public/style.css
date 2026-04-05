@@ -1,8 +1,6 @@
-#html, body {
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
   height: 100%;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
   overflow: hidden;
 }
 body {
@@ -10,62 +8,135 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #f0f8ff;
 }
-#controls {
+
+/* ── Top bar ── */
+#topbar {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+  justify-content: space-between;
+  padding: 6px 10px;
   background: #fff8dc;
-  position: relative;
-  width: 100%;
-  z-index: 2;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  min-height: 60px;
+  z-index: 10;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  height: 44px;
 }
-#controls button {
-  font-size: 1.2rem;
-  padding: 0.5rem 1.5rem;
+#topbar-left { display: flex; gap: 6px; }
+#topbar-center { font-weight: 700; font-size: 16px; color: #333; }
+#topbar-right { display: flex; }
+
+#topbar button {
+  font-size: 13px;
+  padding: 4px 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #ffb347;
   color: #fff;
   cursor: pointer;
   transition: background 0.2s;
 }
-#controls button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+#topbar button:disabled { background: #ccc; cursor: not-allowed; }
+#topbar button:not(:disabled):active { background: #ff8800; }
+
+#statsToggle {
+  width: 32px; height: 32px; padding: 4px;
+  background: none; border: 1px solid #ddd; border-radius: 6px;
+  cursor: pointer; color: #666;
 }
-#controls button:not(:disabled):hover {
-  background: #ff8800;
+#statsToggle svg { width: 100%; height: 100%; }
+#statsToggle.active { background: #ffb347; color: #fff; border-color: #ffb347; }
+
+/* ── Stats panel ── */
+#stats-panel {
+  background: #fffdf5;
+  border-bottom: 1px solid #eee;
+  padding: 8px 10px;
+  display: flex;
+  gap: 12px;
+  z-index: 9;
+  overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease, opacity 0.2s ease;
+  max-height: 200px;
+  opacity: 1;
 }
+#stats-panel.collapsed {
+  max-height: 0;
+  padding: 0 10px;
+  opacity: 0;
+  border-bottom: none;
+}
+
+.stats-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #999;
+  letter-spacing: 0.5px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+#stats-letters { flex: 1; }
+#stats-colors { flex: 0 0 auto; min-width: 80px; }
+
+#letter-grid {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 2px;
+}
+#letter-grid .letter-cell {
+  width: 100%; aspect-ratio: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 700;
+  border-radius: 3px;
+  background: #eee;
+  color: #bbb;
+  transition: all 0.2s;
+}
+#letter-grid .letter-cell.popped {
+  background: #69F0AE;
+  color: #1b5e20;
+}
+
+#color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+#color-grid .color-dot {
+  display: flex; align-items: center; gap: 3px;
+  font-size: 10px; color: #666; font-weight: 600;
+}
+#color-grid .color-dot .dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ── Canvas ── */
 #canvas-container {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 44px);
   position: relative;
   background: #e0f7fa;
   overflow: hidden;
+  transition: height 0.25s ease;
 }
+body.stats-open #canvas-container {
+  height: calc(100vh - 44px - 72px);
+}
+
 #balloonCanvas {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   background: transparent;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   z-index: 1;
 }
+
 @media (max-width: 600px) {
-  #controls button {
-    font-size: 1rem;
-    padding: 0.4rem 1rem;
-  }
-  #controls {
-    min-height: 50px;
-  }
-  #canvas-container {
-    height: calc(100vh - 50px);
-  }
+  #topbar { height: 40px; padding: 4px 8px; }
+  #topbar button { font-size: 12px; padding: 3px 10px; }
+  #canvas-container { height: calc(100vh - 40px); }
+  body.stats-open #canvas-container { height: calc(100vh - 40px - 68px); }
 }

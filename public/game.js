@@ -2,6 +2,11 @@ const canvas = document.getElementById('balloonCanvas');
 const ctx = canvas.getContext('2d');
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
+const scoreDisplay = document.getElementById('score-display');
+const statsToggle = document.getElementById('statsToggle');
+const statsPanel = document.getElementById('stats-panel');
+const letterGrid = document.getElementById('letter-grid');
+const colorGrid = document.getElementById('color-grid');
 
 let gameActive = false;
 let balloons = [];
@@ -13,6 +18,49 @@ const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 
 // Popping effect particles
 let popParticles = [];
 let touchScore = 0;
+let poppedLetters = new Set();
+let colorCounts = {};
+
+// ── Stats panel UI ──
+function buildLetterGrid() {
+  letterGrid.innerHTML = '';
+  for (const l of letters) {
+    const cell = document.createElement('div');
+    cell.className = 'letter-cell';
+    cell.textContent = l;
+    cell.id = 'lc-' + l;
+    letterGrid.appendChild(cell);
+  }
+}
+
+function updateStatsUI() {
+  scoreDisplay.textContent = '⭐ ' + touchScore;
+  // Update letter grid
+  for (const l of letters) {
+    const cell = document.getElementById('lc-' + l);
+    if (cell) cell.className = poppedLetters.has(l) ? 'letter-cell popped' : 'letter-cell';
+  }
+  // Update color grid — show top 5 colors
+  const sorted = Object.entries(colorCounts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  colorGrid.innerHTML = '';
+  for (const [color, count] of sorted) {
+    const dot = document.createElement('div');
+    dot.className = 'color-dot';
+    dot.innerHTML = '<span class="dot" style="background:' + color + '"></span>' + count;
+    colorGrid.appendChild(dot);
+  }
+}
+
+function toggleStats() {
+  statsPanel.classList.toggle('collapsed');
+  statsToggle.classList.toggle('active');
+  document.body.classList.toggle('stats-open');
+  // Resize canvas after transition
+  setTimeout(resizeCanvas, 260);
+}
+
+statsToggle.addEventListener('click', toggleStats);
+buildLetterGrid();
 
 // Pre-calculate non-overlapping X positions for 26 balloons
 let balloonXPositions = [];
@@ -203,17 +251,6 @@ function render() {
     drawBalloon(balloon);
   }
   drawPopParticles();
-  // Draw score in touch mode
-  if (isTouchDevice && gameActive) {
-    ctx.save();
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillStyle = 'rgba(0,0,0,0.3)';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'top';
-    const w = canvas.width / (window.devicePixelRatio || 1);
-    ctx.fillText('⭐ ' + touchScore, w - 16, 12);
-    ctx.restore();
-  }
 }
 
 function gameLoop() {
@@ -232,6 +269,9 @@ function startGame() {
   balloons = [];
   popParticles = [];
   touchScore = 0;
+  poppedLetters = new Set();
+  colorCounts = {};
+  updateStatsUI();
   startBtn.disabled = true;
   restartBtn.disabled = false;
   window.addEventListener('keydown', handleKey);
@@ -324,6 +364,10 @@ function handleCanvasInteraction(x, y) {
         // Touch mode: score!
         touchScore++;
       }
+      // Track stats
+      poppedLetters.add(popped.letter);
+      colorCounts[popped.color] = (colorCounts[popped.color] || 0) + 1;
+      updateStatsUI();
       // Touch mode: don't auto-respawn — letter returns to available pool
       return;
     }
