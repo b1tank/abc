@@ -125,7 +125,7 @@ function drawBalloon(balloon) {
   ctx.stroke();
 
   // Draw letter
-  ctx.font = `${balloon.size/2}px Comic Sans MS, Comic Sans, cursive`;
+  ctx.font = `bold ${balloon.size/2}px sans-serif`;
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -206,7 +206,7 @@ function render() {
   // Draw score in touch mode
   if (isTouchDevice && gameActive) {
     ctx.save();
-    ctx.font = 'bold 24px Comic Sans MS, cursive';
+    ctx.font = 'bold 24px sans-serif';
     ctx.fillStyle = 'rgba(0,0,0,0.3)';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'top';
@@ -352,7 +352,7 @@ if (isTouchDevice) {
     // Show a brief touch hint
     const hint = document.createElement('div');
     hint.textContent = 'Tap anywhere to spawn balloons! Tap a balloon to pop it!';
-    hint.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:16px 24px;border-radius:12px;font-size:18px;font-family:Comic Sans MS,cursive;text-align:center;z-index:100;pointer-events:none;transition:opacity 1s;';
+    hint.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:16px 24px;border-radius:12px;font-size:18px;font-family:sans-serif;text-align:center;z-index:100;pointer-events:none;transition:opacity 1s;';
     document.body.appendChild(hint);
     setTimeout(() => { hint.style.opacity = '0'; }, 2000);
     setTimeout(() => { hint.remove(); }, 3000);
