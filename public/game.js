@@ -7,8 +7,12 @@ let gameActive = false;
 let balloons = [];
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
+// Touch mode detection
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
 // Popping effect particles
 let popParticles = [];
+let touchScore = 0;
 
 // Pre-calculate non-overlapping X positions for 26 balloons
 let balloonXPositions = [];
@@ -73,8 +77,32 @@ function createBalloon(letter, index) {
     color: randomColor(),
     speed: 1.5 + Math.random() * 1.5,
     aRatio,
-    bRatio
+    bRatio,
+    wiggleOffset: Math.random() * Math.PI * 2,
+    wiggleAmp: isTouchDevice ? (0.3 + Math.random() * 0.5) : 0
   };
+}
+
+function createBalloonAtPosition(letter, x, y) {
+  const size = randomSize();
+  const { aRatio, bRatio } = randomEllipseRatio();
+  return {
+    letter,
+    x,
+    y,
+    size,
+    color: randomColor(),
+    speed: 1.2 + Math.random() * 1.0,
+    aRatio,
+    bRatio,
+    wiggleOffset: Math.random() * Math.PI * 2,
+    wiggleAmp: 0.4 + Math.random() * 0.4
+  };
+}
+
+function getAvailableLetters() {
+  const onScreen = new Set(balloons.map(b => b.letter));
+  return letters.filter(l => !onScreen.has(l));
 }
 
 function drawBalloon(balloon) {
@@ -151,6 +179,7 @@ function drawPopParticles() {
 }
 
 function updateBalloons() {
+  const time = Date.now() / 1000;
   // Balloons stop at the top of the canvas
   for (let balloon of balloons) {
     const minY = (balloon.size * balloon.bRatio / 2) + 2; // 2px margin
@@ -159,6 +188,10 @@ function updateBalloons() {
       if (balloon.y - minY < 0) {
         balloon.y = minY;
       }
+    }
+    // Gentle horizontal wiggle (touch mode balloons)
+    if (balloon.wiggleAmp > 0) {
+      balloon.x += Math.sin(time * 2 + balloon.wiggleOffset) * balloon.wiggleAmp;
     }
   }
   // Do not remove balloons at the top
@@ -170,6 +203,17 @@ function render() {
     drawBalloon(balloon);
   }
   drawPopParticles();
+  // Draw score in touch mode
+  if (isTouchDevice && gameActive) {
+    ctx.save();
+    ctx.font = 'bold 24px Comic Sans MS, cursive';
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'top';
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    ctx.fillText('⭐ ' + touchScore, w - 16, 12);
+    ctx.restore();
+  }
 }
 
 function gameLoop() {
@@ -187,6 +231,7 @@ function startGame() {
   gameActive = true;
   balloons = [];
   popParticles = [];
+  touchScore = 0;
   startBtn.disabled = true;
   restartBtn.disabled = false;
   window.addEventListener('keydown', handleKey);
@@ -246,6 +291,21 @@ function handleCanvasClick(e) {
   const dpr = window.devicePixelRatio || 1;
   const x = (e.clientX - rect.left) * (canvas.width / rect.width) / dpr;
   const y = (e.clientY - rect.top) * (canvas.height / rect.height) / dpr;
+  handleCanvasInteraction(x, y);
+}
+
+function handleCanvasTouch(e) {
+  if (!gameActive) return;
+  e.preventDefault(); // Prevent double-fire and scroll
+  const touch = e.changedTouches[0];
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const x = (touch.clientX - rect.left) * (canvas.width / rect.width) / dpr;
+  const y = (touch.clientY - rect.top) * (canvas.height / rect.height) / dpr;
+  handleCanvasInteraction(x, y);
+}
+
+function handleCanvasInteraction(x, y) {
   // Check balloons from topmost to bottom (reverse order)
   for (let i = balloons.length - 1; i >= 0; i--) {
     const balloon = balloons[i];
@@ -253,19 +313,51 @@ function handleCanvasClick(e) {
       // Pop the balloon
       const popped = balloons.splice(i, 1)[0];
       popParticles.push(...createPopParticles(popped));
-      // Respawn a new balloon with same letter and horizontal position
-      const letterIndex = letters.indexOf(popped.letter);
-      if (letterIndex !== -1) {
-        balloons.push(createBalloon(popped.letter, letterIndex));
+
+      if (!isTouchDevice) {
+        // Desktop: respawn same letter at fixed X position
+        const letterIndex = letters.indexOf(popped.letter);
+        if (letterIndex !== -1) {
+          balloons.push(createBalloon(popped.letter, letterIndex));
+        }
+      } else {
+        // Touch mode: score!
+        touchScore++;
       }
-      break; // Only pop one balloon per click
+      // Touch mode: don't auto-respawn — letter returns to available pool
+      return;
+    }
+  }
+
+  // Touch mode: tap on empty area → spawn a new balloon from available letters
+  if (isTouchDevice) {
+    const available = getAvailableLetters();
+    if (available.length > 0) {
+      const letter = available[Math.floor(Math.random() * available.length)];
+      balloons.push(createBalloonAtPosition(letter, x, y));
     }
   }
 }
 
 canvas.addEventListener('click', handleCanvasClick);
+canvas.addEventListener('touchend', handleCanvasTouch, { passive: false });
 startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', restartGame);
+
+// On touch devices, auto-start and show touch hint
+if (isTouchDevice) {
+  // Auto-start after a brief delay for page load
+  setTimeout(() => {
+    startGame();
+    // Show a brief touch hint
+    const hint = document.createElement('div');
+    hint.textContent = 'Tap anywhere to spawn balloons! Tap a balloon to pop it!';
+    hint.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:16px 24px;border-radius:12px;font-size:18px;font-family:Comic Sans MS,cursive;text-align:center;z-index:100;pointer-events:none;transition:opacity 1s;';
+    document.body.appendChild(hint);
+    setTimeout(() => { hint.style.opacity = '0'; }, 2000);
+    setTimeout(() => { hint.remove(); }, 3000);
+  }, 300);
+}
 
 // Initial render
 render();
