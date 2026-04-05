@@ -1,9 +1,0 @@
-services:
-  abc:
-    container_name: ${APP_NAME}
-    image: ${ACR_NAME}.azurecr.io/${APP_NAME}:latest
-    ports:
-      - ${APP_PORT_HOST}:${APP_PORT_CONTAINER}
-    env_file:
-      - stack.env # portainer requires this file
-    restart: unless-stopped
