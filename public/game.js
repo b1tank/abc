@@ -258,7 +258,7 @@ function createMathChallenge() {
   }
   return {
     type: 'math',
-    prompt: prompt + ' = ?',
+    prompt: prompt + ' =',
     answer: [String(result)],
     progress: 0,
     mathA: a,
@@ -464,15 +464,19 @@ function handleFreePlayInput(key) {
 
 // ── UI updates ──
 function updateChallengeUI() {
+  var badge = document.getElementById('hint-badge');
   if (currentMode === 'free') {
     challengeDisplay.classList.add('hidden');
+    badge.classList.add('hidden');
     scoreDisplay.classList.remove('hidden');
     scoreDisplay.textContent = '\uD83C\uDF88 ' + modeStats[currentMode].score;
   } else if (!currentChallenge) {
     challengeDisplay.classList.add('hidden');
+    badge.classList.add('hidden');
     scoreDisplay.classList.add('hidden');
   } else {
     scoreDisplay.classList.add('hidden');
+    badge.classList.toggle('hidden', currentChallenge.type !== 'math');
     challengeDisplay.classList.remove('hidden');
     if (currentChallenge.type === 'spell') {
       var parts = [];
@@ -486,7 +490,7 @@ function updateChallengeUI() {
       challengeDisplay.textContent = (currentChallenge.emoji || '') + ' ' + parts.join(' ');
     } else {
       if (currentChallenge.progress >= currentChallenge.answer.length) {
-        challengeDisplay.textContent = currentChallenge.prompt.replace('?', currentChallenge.answer[0]);
+        challengeDisplay.textContent = currentChallenge.prompt.replace('=', '= ' + currentChallenge.answer[0]);
       } else {
         challengeDisplay.textContent = currentChallenge.prompt;
       }
@@ -521,18 +525,20 @@ function updateMathHint() {
   mathHintEl.innerHTML = html;
 }
 
-challengeDisplay.addEventListener('mouseenter', function () {
+var hintBadge = document.getElementById('hint-badge');
+
+hintBadge.addEventListener('mouseenter', function () {
   if (currentChallenge && currentChallenge.type === 'math') mathHintEl.classList.remove('hidden');
 });
-challengeDisplay.addEventListener('mouseleave', function () {
+hintBadge.addEventListener('mouseleave', function () {
   mathHintEl.classList.add('hidden');
 });
-challengeDisplay.addEventListener('touchstart', function (e) {
+hintBadge.addEventListener('click', function (e) {
   if (currentChallenge && currentChallenge.type === 'math') {
     mathHintEl.classList.toggle('hidden');
-    e.preventDefault();
+    e.stopPropagation();
   }
-}, { passive: false });
+});
 
 function updateRewardsUI() {
   rewardsDisplay.textContent = rewards > 0 ? '\uD83C\uDF88' + rewards : '';
