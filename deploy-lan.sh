@@ -2,6 +2,10 @@
 # Deploy ABC Balloon to YummyJars LAN platform
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/.env.lan"
+export YUMMYJARS_KEY
+
 SLUG="abc"
 TARGET="${YUMMYJARS_LAN_URL:-https://my.yummyjars.com}"
 
