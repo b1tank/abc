@@ -401,10 +401,12 @@ function updateGridHighlights() {
     var cell = allCells[j];
     var val = cell.querySelector('.lc-letter').textContent;
     if (currentChallenge.type === 'spell') {
-      if (completedChars[val]) {
-        cell.classList.add('challenge-done');
-      } else if (val === nextChar && settings.spellHints) {
+      if (val === nextChar && settings.spellHints) {
         cell.classList.add('challenge-next');
+      } else if (val === nextChar) {
+        cell.classList.add('challenge-target');
+      } else if (completedChars[val]) {
+        cell.classList.add('challenge-done');
       } else if (targetSet[val]) {
         cell.classList.add('challenge-target');
       } else {
