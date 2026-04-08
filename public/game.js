@@ -23,28 +23,38 @@ var letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 var isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
 var popParticles = [];
-var score = 0;
-var letterStats = {};
+var modeStats = {
+  free: { score: 0, letterStats: {} },
+  spell: { score: 0 },
+  math: { score: 0 }
+};
 var currentMode = 'free';
 var currentChallenge = null;
-var rewards = [];
+var rewards = {};
 var streak = 0;
 
 // ── Reward emoji pool ──
-var REWARD_EMOJIS = ['\uD83C\uDF5C','\uD83C\uDF6B','\uD83E\uDDC1','\uD83C\uDF70','\uD83C\uDF6C','\uD83C\uDF82','\uD83C\uDF69','\uD83C\uDF6A'];
+var REWARD_EMOJIS = ['\uD83C\uDF5C','\uD83E\uDD6D','\uD83C\uDF4D','\uD83C\uDF6B','\uD83E\uDD5A'];
 
-// ── Word bank (100 common short words for 4-5 year olds) ──
+// ── Word bank (common flashcard words with emoji hints) ──
 var WORD_BANK = [
-  'CAT','DOG','SUN','MOM','DAD','CUP','BUS','HAT','PIG','COW',
-  'BED','RED','BIG','RUN','FUN','CAN','MAN','PAN','VAN','FAN',
-  'BAT','RAT','SAT','MAT','MAP','TAP','CAP','NAP','LAP','JAM',
-  'HOP','POP','MOP','TOP','POT','HOT','DOT','GOT','NOT','LOT',
-  'BUG','HUG','MUG','RUG','TUG','DUG','CUT','NUT','HUT','BUT',
-  'HEN','PEN','TEN','DEN','MEN','NET','PET','SET','WET','JET',
-  'FIG','DIG','WIG','PIN','WIN','TIN','BIN','SIT','HIT','BIT',
-  'BOX','FOX','LOG','FOG','JOG','MOB','JOB','SOB','COB','COP',
-  'APE','ATE','AGE','ACE','USE','OAK','OWL','ODD','ORB','OAR',
-  'SKY','FLY','TRY','DRY','CRY','SPY','SHY','WHY','FRY','PLY'
+  {w:'CAT',e:'🐱'},{w:'DOG',e:'🐶'},{w:'SUN',e:'☀️'},{w:'MOON',e:'🌙'},{w:'STAR',e:'⭐'},
+  {w:'FISH',e:'🐟'},{w:'BIRD',e:'🐦'},{w:'BEE',e:'🐝'},{w:'BUG',e:'🐛'},{w:'COW',e:'🐄'},
+  {w:'PIG',e:'🐷'},{w:'HEN',e:'🐔'},{w:'FOX',e:'🦊'},{w:'OWL',e:'🦉'},{w:'BAT',e:'🦇'},
+  {w:'ANT',e:'🐜'},{w:'FROG',e:'🐸'},{w:'BEAR',e:'🐻'},{w:'LION',e:'🦁'},{w:'DUCK',e:'🦆'},
+  {w:'TREE',e:'🌳'},{w:'LEAF',e:'🍃'},{w:'ROSE',e:'🌹'},{w:'CORN',e:'🌽'},{w:'SEED',e:'🌱'},
+  {w:'CAKE',e:'🎂'},{w:'PIE',e:'🥧'},{w:'EGG',e:'🥚'},{w:'MILK',e:'🥛'},{w:'CUP',e:'☕'},
+  {w:'CAR',e:'🚗'},{w:'BUS',e:'🚌'},{w:'BOAT',e:'⛵'},{w:'BELL',e:'🔔'},{w:'DRUM',e:'🥁'},
+  {w:'HAT',e:'🎩'},{w:'SHOE',e:'👟'},{w:'RING',e:'💍'},{w:'KEY',e:'🔑'},{w:'GEM',e:'💎'},
+  {w:'RAIN',e:'🌧️'},{w:'FIRE',e:'🔥'},{w:'WAVE',e:'🌊'},{w:'WIND',e:'💨'},{w:'SNOW',e:'❄️'},
+  {w:'BALL',e:'⚽'},{w:'KITE',e:'🪁'},{w:'DICE',e:'🎲'},{w:'BOOK',e:'📖'},{w:'PEN',e:'🖊️'},
+  {w:'LAMP',e:'💡'},{w:'LOCK',e:'🔒'},{w:'GIFT',e:'🎁'},{w:'BOMB',e:'💣'},{w:'BONE',e:'🦴'},
+  {w:'CRAB',e:'🦀'},{w:'WORM',e:'🪱'},{w:'SNAIL',e:'🐌'},{w:'WHALE',e:'🐳'},{w:'SHARK',e:'🦈'},
+  {w:'HORSE',e:'🐴'},{w:'MOUSE',e:'🐭'},{w:'SHEEP',e:'🐑'},{w:'GOAT',e:'🐐'},{w:'WOLF',e:'🐺'},
+  {w:'APPLE',e:'🍎'},{w:'GRAPE',e:'🍇'},{w:'LEMON',e:'🍋'},{w:'PEACH',e:'🍑'},{w:'PEAR',e:'🍐'},
+  {w:'PIZZA',e:'🍕'},{w:'TACO',e:'🌮'},{w:'RICE',e:'🍚'},{w:'MEAT',e:'🍖'},{w:'SOUP',e:'🍲'},
+  {w:'BABY',e:'👶'},{w:'KING',e:'🤴'},{w:'EYES',e:'👀'},{w:'NOSE',e:'👃'},{w:'HAND',e:'✋'},
+  {w:'TENT',e:'⛺'},{w:'ROCK',e:'🪨'},{w:'MOON',e:'🌝'},{w:'CLOUD',e:'☁️'},{w:'HEART',e:'❤️'}
 ];
 
 // ── Settings & persistence ──
@@ -61,7 +71,7 @@ function loadSaved() {
 
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    score: score, letterStats: letterStats, settings: settings,
+    modeStats: modeStats, settings: settings,
     rewards: rewards, currentMode: currentMode
   }));
 }
@@ -69,9 +79,15 @@ function saveState() {
 var saved = loadSaved();
 var settings = Object.assign({}, defaultSettings, saved ? saved.settings : {});
 if (saved) {
-  score = saved.score || 0;
-  letterStats = saved.letterStats || {};
-  rewards = saved.rewards || [];
+  if (saved.modeStats) {
+    modeStats.free = saved.modeStats.free || { score: 0, letterStats: {} };
+    modeStats.spell = saved.modeStats.spell || { score: 0 };
+    modeStats.math = saved.modeStats.math || { score: 0 };
+  } else if (saved.score !== undefined) {
+    // Migrate old format
+    modeStats.free = { score: saved.score || 0, letterStats: saved.letterStats || {} };
+  }
+  rewards = saved.rewards || {};
   if (saved.currentMode) currentMode = saved.currentMode;
 }
 
@@ -158,11 +174,12 @@ function randomRewardEmoji() {
 }
 
 function createSpellingChallenge() {
-  var word = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
+  var entry = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
   return {
     type: 'spell',
-    prompt: word,
-    answer: word.split(''),
+    prompt: entry.w,
+    emoji: entry.e,
+    answer: entry.w.split(''),
     progress: 0,
     rewardEmoji: randomRewardEmoji()
   };
@@ -245,12 +262,23 @@ function handleChallengeInput(key) {
   }
 }
 
+function addReward(emoji) {
+  if (!rewards[emoji]) rewards[emoji] = 0;
+  rewards[emoji]++;
+}
+
+function totalRewards() {
+  var t = 0;
+  for (var k in rewards) t += rewards[k];
+  return t;
+}
+
 function completeChallenge() {
-  rewards.push(currentChallenge.rewardEmoji);
+  addReward(currentChallenge.rewardEmoji);
   if (streak >= 3 && streak % 3 === 0) {
-    rewards.push(randomRewardEmoji());
+    addReward(randomRewardEmoji());
   }
-  score++;
+  modeStats[currentMode].score++;
   updateRewardsUI();
   updateStatsUI();
   updateChallengeUI();
@@ -355,8 +383,8 @@ function handleGridClick(key) {
           balloons.push(createBalloon(key, { index: idx, totalCount: balloons.length + 1 }));
         }
       }
-      if (!letterStats[key]) letterStats[key] = { color: randomColor(), count: 0 };
-      letterStats[key].count++;
+      if (!modeStats.free.letterStats[key]) modeStats.free.letterStats[key] = { color: randomColor(), count: 0 };
+      modeStats.free.letterStats[key].count++;
       saveState();
     }
   }
@@ -380,7 +408,7 @@ function updateChallengeUI() {
   if (currentMode === 'free' || !currentChallenge) {
     challengeDisplay.classList.add('hidden');
     scoreDisplay.classList.remove('hidden');
-    scoreDisplay.textContent = '\uD83C\uDF88 ' + score;
+    scoreDisplay.textContent = '\uD83C\uDF88 ' + modeStats[currentMode].score;
   } else {
     scoreDisplay.classList.add('hidden');
     challengeDisplay.classList.remove('hidden');
@@ -393,7 +421,7 @@ function updateChallengeUI() {
           parts.push('_');
         }
       }
-      challengeDisplay.textContent = parts.join('\u00B7');
+      challengeDisplay.textContent = (currentChallenge.emoji || '') + ' ' + parts.join(' ');
     } else {
       if (currentChallenge.progress >= currentChallenge.answer.length) {
         challengeDisplay.textContent = currentChallenge.prompt.replace('?', currentChallenge.answer[0]);
@@ -405,27 +433,23 @@ function updateChallengeUI() {
 }
 
 function updateRewardsUI() {
-  if (rewards.length === 0) {
-    rewardsDisplay.textContent = '';
-    return;
+  var parts = [];
+  for (var i = 0; i < REWARD_EMOJIS.length; i++) {
+    var e = REWARD_EMOJIS[i];
+    var c = rewards[e] || 0;
+    if (c > 0) parts.push(e + c);
   }
-  var maxShow = 8;
-  var shown = rewards.slice(-maxShow);
-  var text = shown.join('');
-  if (rewards.length > maxShow) {
-    text = '+' + (rewards.length - maxShow) + ' ' + text;
-  }
-  rewardsDisplay.textContent = text;
+  rewardsDisplay.textContent = parts.join(' ');
 }
 
 function updateStatsUI() {
-  scoreDisplay.textContent = '\uD83C\uDF88 ' + score;
+  scoreDisplay.textContent = '\uD83C\uDF88 ' + modeStats[currentMode].score;
   if (currentMode === 'free') {
     for (var i = 0; i < letters.length; i++) {
       var l = letters[i];
       var cell = document.getElementById('gc-' + l);
       if (!cell) continue;
-      var stat = letterStats[l];
+      var stat = modeStats.free.letterStats[l];
       if (stat) {
         cell.classList.add('popped');
         cell.style.background = stat.color;
@@ -602,7 +626,7 @@ function updateButtons() {
     gameBtn.textContent = 'Restart';
     gameBtn.classList.add('restart');
     continueBtn.classList.add('hidden');
-  } else if (score > 0 || rewards.length > 0) {
+  } else if (modeStats[currentMode].score > 0 || totalRewards() > 0) {
     continueBtn.classList.remove('hidden');
     gameBtn.textContent = 'Restart';
     gameBtn.classList.add('restart');
@@ -627,9 +651,9 @@ function startGame() {
 }
 
 function doRestart() {
-  score = 0;
-  letterStats = {};
-  rewards = [];
+  modeStats[currentMode].score = 0;
+  if (currentMode === 'free') modeStats.free.letterStats = {};
+  rewards = {};
   streak = 0;
   currentChallenge = null;
   updateRewardsUI();
@@ -645,7 +669,7 @@ function doRestart() {
 }
 
 gameBtn.addEventListener('click', function () {
-  if (!gameActive && score === 0 && rewards.length === 0) startGame();
+  if (!gameActive && modeStats[currentMode].score === 0 && totalRewards() === 0) startGame();
   else showModal();
 });
 continueBtn.addEventListener('click', function () { startGame(); });
@@ -655,10 +679,10 @@ updateButtons();
 function popBalloon(index) {
   var popped = balloons.splice(index, 1)[0];
   popParticles.push.apply(popParticles, createPopParticles(popped));
-  score++;
-  if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
-  letterStats[popped.letter].color = popped.color;
-  letterStats[popped.letter].count++;
+  modeStats.free.score++;
+  if (!modeStats.free.letterStats[popped.letter]) modeStats.free.letterStats[popped.letter] = { color: popped.color, count: 0 };
+  modeStats.free.letterStats[popped.letter].color = popped.color;
+  modeStats.free.letterStats[popped.letter].count++;
   updateStatsUI();
   saveState();
   return popped;
