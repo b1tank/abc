@@ -246,19 +246,21 @@ function createMathChallenge() {
   var isAdd = Math.random() < 0.5;
   var a, b, result, prompt;
   if (isAdd) {
-    a = Math.floor(Math.random() * 10);
-    b = Math.floor(Math.random() * (11 - a));
+    a = 1 + Math.floor(Math.random() * 9);
+    b = 1 + Math.floor(Math.random() * (10 - a));
     result = a + b;
     prompt = a + ' + ' + b;
   } else {
-    a = 1 + Math.floor(Math.random() * 10);
-    b = Math.floor(Math.random() * a);
-    result = a - b;
-    prompt = a + ' \u2212 ' + b;
+    // Decompose: total = ? + known
+    var total = 2 + Math.floor(Math.random() * 9); // 2-10
+    b = 1 + Math.floor(Math.random() * (total - 1)); // known part: 1 to total-1
+    a = total;
+    result = total - b;
+    prompt = total + ' = _ + ' + b;
   }
   return {
     type: 'math',
-    prompt: prompt + ' =',
+    prompt: isAdd ? (prompt + ' =') : prompt,
     answer: [String(result)],
     progress: 0,
     mathA: a,
@@ -490,7 +492,7 @@ function updateChallengeUI() {
       challengeDisplay.textContent = (currentChallenge.emoji || '') + ' ' + parts.join(' ');
     } else {
       if (currentChallenge.progress >= currentChallenge.answer.length) {
-        challengeDisplay.textContent = currentChallenge.prompt.replace('=', '= ' + currentChallenge.answer[0]);
+        challengeDisplay.textContent = currentChallenge.prompt.replace('=', '= ' + currentChallenge.answer[0]).replace('_', currentChallenge.answer[0]);
       } else {
         challengeDisplay.textContent = currentChallenge.prompt;
       }
@@ -517,10 +519,11 @@ function updateMathHint() {
     if (c.mathA > 0 && c.mathB > 0) html += '<span class="hint-plus">+</span>';
     for (var j = 0; j < c.mathB; j++) html += '<span class="hint-item">' + e + '</span>';
   } else {
-    // Subtraction: show A items, last B are crossed out
-    var keep = c.mathA - c.mathB;
-    for (var k = 0; k < keep; k++) html += '<span class="hint-item">' + e + '</span>';
-    for (var m = 0; m < c.mathB; m++) html += '<span class="hint-item hint-removed">' + e + '</span>';
+    // Decompose: show unknown part as ? + known part
+    var unknown = c.mathA - c.mathB;
+    for (var k = 0; k < unknown; k++) html += '<span class="hint-item hint-unknown">' + e + '</span>';
+    html += '<span class="hint-plus">+</span>';
+    for (var m = 0; m < c.mathB; m++) html += '<span class="hint-item">' + e + '</span>';
   }
   mathHintEl.innerHTML = html;
 }

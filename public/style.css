@@ -432,6 +432,14 @@ body {
   text-decoration: line-through;
   filter: grayscale(1);
 }
+.hint-unknown {
+  background: #fff3e0;
+  border: 2px dashed #ffb347;
+  border-radius: 6px;
+  padding: 0 4px;
+  color: #ffb347;
+  font-weight: 700;
+}
 
 /* ── Mode buttons ── */
 .mode-btn {
