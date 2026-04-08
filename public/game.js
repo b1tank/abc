@@ -59,7 +59,31 @@ var WORD_BANK = [
 
 // ── Settings & persistence ──
 var STORAGE_KEY = 'abc-balloon-game';
-var defaultSettings = { wiggle: true, speed: 1.4, balloonSize: 75, spellHints: false, mathHints: false };
+var defaultSettings = { wiggle: true, speed: 1.4, balloonSize: 75, spellHints: false, mathHints: false, lang: 'cn' };
+
+// ── i18n ──
+var i18n = {
+  en: {
+    start: 'Start', continue_: 'Continue', restart: 'Restart',
+    cancel: 'Cancel', modalMsg: 'Restart? Score and rewards will be cleared.',
+    wiggle: 'Wiggle', speed: 'Speed', size: 'Size',
+    spellHints: 'Spelling hints', mathHints: 'Math hints', lang: 'Lang',
+    freePlay: 'Free Play', spelling: 'Spelling', math: 'Math',
+    tapHint: 'Tap anywhere to spawn balloons! Tap a balloon to pop it!',
+    challengeHint: 'Pop the right balloon!'
+  },
+  cn: {
+    start: '\u5F00\u59CB', continue_: '\u7EE7\u7EED', restart: '\u91CD\u65B0\u5F00\u59CB',
+    cancel: '\u53D6\u6D88', modalMsg: '\u91CD\u65B0\u5F00\u59CB\uFF1F\u5206\u6570\u548C\u5956\u52B1\u5C06\u88AB\u6E05\u9664\u3002',
+    wiggle: '\u6447\u6446', speed: '\u901F\u5EA6', size: '\u5927\u5C0F',
+    spellHints: '\u62FC\u5199\u63D0\u793A', mathHints: '\u6570\u5B66\u63D0\u793A', lang: '\u8BED\u8A00',
+    freePlay: '\u81EA\u7531\u73A9', spelling: '\u62FC\u5199', math: '\u6570\u5B66',
+    tapHint: '\u70B9\u51FB\u4EFB\u610F\u4F4D\u7F6E\u751F\u6210\u6C14\u7403\uFF01\u70B9\u51FB\u6C14\u7403\u6233\u7834\uFF01',
+    challengeHint: '\u6233\u7834\u6B63\u786E\u7684\u6C14\u7403\uFF01'
+  }
+};
+
+function t(key) { return i18n[settings.lang][key] || i18n.en[key] || key; }
 
 function loadSaved() {
   try {
@@ -97,6 +121,29 @@ document.getElementById('set-speed').value = String(settings.speed);
 document.getElementById('set-size').value = String(settings.balloonSize);
 document.getElementById('set-spellHints').checked = settings.spellHints;
 document.getElementById('set-mathHints').checked = settings.mathHints;
+document.getElementById('set-lang').checked = settings.lang === 'cn';
+
+function applyLang() {
+  var els = document.querySelectorAll('[data-i18n]');
+  for (var i = 0; i < els.length; i++) {
+    var key = els[i].getAttribute('data-i18n');
+    els[i].textContent = t(key);
+  }
+  document.getElementById('modal-msg').textContent = t('modalMsg');
+  document.getElementById('modal-cancel').textContent = t('cancel');
+  document.getElementById('modal-confirm').textContent = t('restart');
+  document.getElementById('mode-free').title = t('freePlay');
+  document.getElementById('mode-spell').title = t('spelling');
+  document.getElementById('mode-math').title = t('math');
+  updateButtons();
+  updateChallengeUI();
+}
+
+document.getElementById('set-lang').addEventListener('change', function () {
+  settings.lang = this.checked ? 'cn' : 'en';
+  applyLang();
+  saveState();
+});
 
 document.getElementById('set-wiggle').addEventListener('change', function () {
   settings.wiggle = this.checked;
@@ -475,6 +522,7 @@ updateRewardsUI();
 for (var mk in modeBtns) {
   modeBtns[mk].classList.toggle('mode-active', mk === currentMode);
 }
+applyLang();
 
 // ── Canvas sizing ──
 var balloonXPositions = [];
@@ -626,16 +674,17 @@ function gameLoop() {
 // ── Start / Restart ──
 function updateButtons() {
   if (gameActive) {
-    gameBtn.textContent = 'Restart';
+    gameBtn.textContent = t('restart');
     gameBtn.classList.add('restart');
     continueBtn.classList.add('hidden');
   } else if (modeStats[currentMode].score > 0 || totalRewards() > 0) {
     continueBtn.classList.remove('hidden');
-    gameBtn.textContent = 'Restart';
+    continueBtn.textContent = t('continue_');
+    gameBtn.textContent = t('restart');
     gameBtn.classList.add('restart');
   } else {
     continueBtn.classList.add('hidden');
-    gameBtn.textContent = 'Start';
+    gameBtn.textContent = t('start');
     gameBtn.classList.remove('restart');
   }
 }
@@ -752,8 +801,8 @@ if (isTouchDevice) {
     startGame();
     var hint = document.createElement('div');
     hint.textContent = currentMode === 'free'
-      ? 'Tap anywhere to spawn balloons! Tap a balloon to pop it!'
-      : 'Pop the right balloon!';
+      ? t('tapHint')
+      : t('challengeHint');
     hint.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:16px 24px;border-radius:12px;font-size:18px;font-family:sans-serif;text-align:center;z-index:100;pointer-events:none;transition:opacity 1s;';
     document.body.appendChild(hint);
     setTimeout(function () { hint.style.opacity = '0'; }, 2000);

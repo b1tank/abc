@@ -26,15 +26,17 @@
       <div id="settings-wrap">
         <button id="settingsBtn" aria-label="Settings">⚙</button>
         <div id="settings-dropdown" class="hidden">
-          <label><input type="checkbox" id="set-wiggle" checked> Wiggle</label>
-          <label>Speed
+          <label class="lang-switch-label">EN <input type="checkbox" id="set-lang" checked> <span
+              class="lang-slider"></span> 中文</label>
+          <label><input type="checkbox" id="set-wiggle" checked> <span data-i18n="wiggle">Wiggle</span></label>
+          <label><span data-i18n="speed">Speed</span>
             <input type="range" id="set-speed" min="0.4" max="2.5" step="0.1" value="1.4">
           </label>
-          <label>Size
+          <label><span data-i18n="size">Size</span>
             <input type="range" id="set-size" min="30" max="120" step="5" value="75">
           </label>
-          <label><input type="checkbox" id="set-spellHints"> Spelling hints</label>
-          <label><input type="checkbox" id="set-mathHints"> Math hints</label>
+          <label><input type="checkbox" id="set-spellHints"> <span data-i18n="spellHints">Spelling hints</span></label>
+          <label><input type="checkbox" id="set-mathHints"> <span data-i18n="mathHints">Math hints</span></label>
         </div>
       </div>
     </div>
