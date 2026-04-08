@@ -43,16 +43,12 @@ body {
   gap: 6px;
   align-items: center;
 }
-#highscore-display {
-  font-size: clamp(11px, 1.8vw, 15px);
-  color: #999;
-  font-weight: 600;
-}
+
 #topbar-right {
   display: flex;
 }
 
-#topbar button {
+#topbar #gameBtn {
   font-size: clamp(13px, 1.8vw, 16px);
   padding: 4px 12px;
   border: none;
@@ -62,11 +58,11 @@ body {
   cursor: pointer;
   transition: background 0.2s;
 }
-#topbar button:disabled {
+#topbar #gameBtn:disabled {
   background: #ccc;
   cursor: not-allowed;
 }
-#topbar button:not(:disabled):active {
+#topbar #gameBtn:not(:disabled):active {
   background: #ff8800;
 }
 
@@ -74,17 +70,14 @@ body {
   background: none;
   border: none;
   cursor: pointer;
-  color: #999;
+  color: #ffb347;
   font-size: clamp(12px, 2vw, 16px);
   padding: 2px 4px;
   line-height: 1;
-  transition:
-    transform 0.25s ease,
-    color 0.2s;
+  transition: transform 0.25s ease;
 }
 #statsToggle.active {
   transform: rotate(180deg);
-  color: #ffb347;
 }
 
 /* ── Stats panel ── */
@@ -114,9 +107,9 @@ body {
 
 #letter-grid {
   display: grid;
-  grid-template-columns: repeat(13, 1fr);
-  gap: clamp(2px, 0.4vw, 5px);
-  max-width: 700px;
+  grid-template-columns: repeat(26, 1fr);
+  gap: 3px;
+  width: 100%;
 }
 #letter-grid .letter-cell {
   position: relative;
@@ -125,7 +118,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(12px, 2.5vw, 22px);
+  font-size: clamp(10px, 1.3vw, 18px);
   font-weight: 700;
   border-radius: 4px;
   background: #eee;
@@ -141,14 +134,14 @@ body {
 }
 .lc-count {
   position: absolute;
-  top: clamp(-6px, -0.8vw, -4px);
-  right: clamp(-6px, -0.8vw, -4px);
-  font-size: clamp(9px, 1.5vw, 14px);
+  top: -4px;
+  right: -4px;
+  font-size: clamp(7px, 1vw, 12px);
   font-weight: 700;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
-  min-width: clamp(15px, 2.2vw, 22px);
-  height: clamp(15px, 2.2vw, 22px);
+  min-width: clamp(13px, 1.6vw, 18px);
+  height: clamp(13px, 1.6vw, 18px);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -183,15 +176,29 @@ body {
   touch-action: none;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 600px) {
   #topbar {
     padding: 4px 6px;
   }
   #topbar-left {
     gap: 4px;
   }
-  #topbar button {
+  #topbar #gameBtn {
     padding: 3px 8px;
+  }
+  #letter-grid {
+    grid-template-columns: repeat(13, 1fr);
+    gap: 2px;
+  }
+  #letter-grid .letter-cell {
+    font-size: clamp(10px, 2.5vw, 16px);
+  }
+  .lc-count {
+    font-size: clamp(7px, 1.8vw, 11px);
+    min-width: clamp(12px, 3vw, 16px);
+    height: clamp(12px, 3vw, 16px);
+    top: -3px;
+    right: -3px;
   }
 }
 
@@ -208,9 +215,22 @@ body {
   position: relative;
 }
 #settingsBtn {
-  font-size: clamp(16px, 2.5vw, 22px);
+  font-size: clamp(18px, 2.8vw, 24px);
   line-height: 1;
-  padding: 3px 8px;
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #888;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+#settingsBtn:hover,
+#settingsBtn:active {
+  color: #ffb347;
+  border-color: #ffb347;
 }
 #settings-dropdown {
   position: absolute;

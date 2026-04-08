@@ -2,7 +2,6 @@ const canvas = document.getElementById('balloonCanvas');
 const ctx = canvas.getContext('2d');
 const gameBtn = document.getElementById('gameBtn');
 const scoreDisplay = document.getElementById('score-display');
-const highscoreDisplay = document.getElementById('highscore-display');
 const statsToggle = document.getElementById('statsToggle');
 const statsPanel = document.getElementById('stats-panel');
 const letterGrid = document.getElementById('letter-grid');
@@ -34,12 +33,11 @@ function loadSaved() {
 }
 
 function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ score, letterStats, highScore, settings }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ score, letterStats, settings }));
 }
 
 const saved = loadSaved();
 let settings = Object.assign({}, defaultSettings, saved ? saved.settings : {});
-let highScore = (saved && saved.highScore) || 0;
 if (saved) {
   score = saved.score || 0;
   letterStats = saved.letterStats || {};
@@ -96,7 +94,6 @@ function buildLetterGrid() {
 
 function updateStatsUI() {
   scoreDisplay.textContent = '\uD83C\uDF88 ' + score;
-  highscoreDisplay.textContent = highScore > 0 ? ('Best: ' + highScore) : '';
   for (const l of letters) {
     const cell = document.getElementById('lc-' + l);
     if (!cell) continue;
@@ -267,8 +264,6 @@ function startGame() {
   gameActive = true;
   balloons = [];
   popParticles = [];
-  score = 0;
-  letterStats = {};
   updateStatsUI();
   saveState();
   gameBtn.textContent = 'Restart';
@@ -279,7 +274,8 @@ function startGame() {
 }
 
 function doRestart() {
-  if (score > highScore) highScore = score;
+  score = 0;
+  letterStats = {};
   saveState();
   gameActive = false;
   balloons = [];
@@ -299,7 +295,6 @@ function popBalloon(index) {
   const popped = balloons.splice(index, 1)[0];
   popParticles.push(...createPopParticles(popped));
   score++;
-  if (score > highScore) highScore = score;
   if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
   letterStats[popped.letter].color = popped.color;
   letterStats[popped.letter].count++;
