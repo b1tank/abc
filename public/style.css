@@ -380,9 +380,9 @@ body {
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
   flex-wrap: wrap;
-  max-width: 280px;
+  max-width: 360px;
   justify-content: center;
   line-height: 1;
 }
@@ -390,14 +390,14 @@ body {
   display: none;
 }
 .hint-item {
-  font-size: clamp(16px, 3vw, 24px);
+  font-size: clamp(20px, 4vw, 30px);
   transition: opacity 0.2s;
 }
 .hint-plus {
-  font-size: clamp(14px, 2.5vw, 20px);
+  font-size: clamp(18px, 3.5vw, 26px);
   font-weight: 700;
   color: #ffb347;
-  margin: 0 3px;
+  margin: 0 4px;
 }
 .hint-removed {
   opacity: 0.25;

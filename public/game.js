@@ -34,7 +34,17 @@ var rewards = 0;
 var streak = 0;
 
 // ── Math hint emoji pool ──
-var MATH_HINT_EMOJIS = ['\uD83E\uDD5A','\uD83C\uDF4E','\u2B50','\uD83D\uDC1F','\uD83C\uDF52','\uD83E\uDD8B','\uD83C\uDF53','\uD83D\uDC3E'];
+var MATH_HINT_EMOJIS = [
+  '\uD83C\uDF4E','\uD83C\uDF4A','\uD83C\uDF4B','\uD83C\uDF4D','\uD83C\uDF47',
+  '\uD83C\uDF53','\uD83C\uDF52','\uD83C\uDF51','\uD83C\uDF50','\uD83E\uDD6D',
+  '\uD83C\uDF49','\uD83C\uDF46','\uD83E\uDD55','\uD83C\uDF3D','\uD83C\uDF55',
+  '\uD83C\uDF54','\uD83C\uDF69','\uD83C\uDF6A','\uD83C\uDF6B','\uD83C\uDF70',
+  '\uD83C\uDF82','\uD83E\uDDC1','\uD83C\uDF6C','\uD83E\uDD5A','\uD83C\uDF5C',
+  '\uD83D\uDC36','\uD83D\uDC31','\uD83D\uDC2D','\uD83D\uDC39','\uD83D\uDC30',
+  '\uD83E\uDD8A','\uD83D\uDC3B','\uD83D\uDC38','\uD83D\uDC37','\uD83D\uDC04',
+  '\uD83D\uDC14','\uD83E\uDD86','\uD83D\uDC1F','\uD83D\uDC33','\uD83E\uDD8B',
+  '\uD83D\uDC1D','\uD83D\uDC1B','\uD83D\uDC0C','\uD83E\uDD80','\uD83D\uDC19'
+];
 
 // ── Word bank (common flashcard words with emoji hints) ──
 var WORD_BANK = [
