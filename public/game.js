@@ -3,7 +3,6 @@ const ctx = canvas.getContext('2d');
 const gameBtn = document.getElementById('gameBtn');
 const continueBtn = document.getElementById('continueBtn');
 const scoreDisplay = document.getElementById('score-display');
-const statsPanel = document.getElementById('stats-panel');
 const letterGrid = document.getElementById('letter-grid');
 const settingsBtn = document.getElementById('settingsBtn');
 const settingsDropdown = document.getElementById('settings-dropdown');
@@ -105,11 +104,6 @@ function buildLetterGrid() {
 
 function updateStatsUI() {
   scoreDisplay.textContent = '\uD83C\uDF88 ' + score;
-  if (score > 0) {
-    statsPanel.classList.remove('collapsed');
-  } else {
-    statsPanel.classList.add('collapsed');
-  }
   for (const l of letters) {
     const cell = document.getElementById('lc-' + l);
     if (!cell) continue;
@@ -126,10 +120,6 @@ function updateStatsUI() {
       cell.querySelector('.lc-count').textContent = '';
     }
   }
-}
-
-function openStats() {
-  statsPanel.classList.remove('collapsed');
 }
 
 buildLetterGrid();
