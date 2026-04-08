@@ -221,10 +221,6 @@ for (var modeKey in modeBtns) {
 }
 
 // ── Challenge engine ──
-function randomRewardEmoji() {
-  return REWARD_EMOJIS[Math.floor(Math.random() * REWARD_EMOJIS.length)];
-}
-
 function createSpellingChallenge() {
   var entry = WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)];
   return {
@@ -232,8 +228,7 @@ function createSpellingChallenge() {
     prompt: entry.w,
     emoji: entry.e,
     answer: entry.w.split(''),
-    progress: 0,
-    rewardEmoji: randomRewardEmoji()
+    progress: 0
   };
 }
 
@@ -256,7 +251,6 @@ function createMathChallenge() {
     prompt: prompt + ' = ?',
     answer: [String(result)],
     progress: 0,
-    rewardEmoji: randomRewardEmoji(),
     mathA: a,
     mathB: b,
     mathIsAdd: isAdd,
