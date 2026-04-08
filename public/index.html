@@ -16,14 +16,12 @@
     </div>
     <div id="topbar-center">
       <span id="score-display">🎈 0</span>
-      <button id="statsToggle" aria-label="Toggle stats">▼</button>
     </div>
     <div id="topbar-right">
       <div id="settings-wrap">
         <button id="settingsBtn" aria-label="Settings">⚙</button>
         <div id="settings-dropdown" class="hidden">
           <label><input type="checkbox" id="set-wiggle" checked> Wiggle</label>
-          <label><input type="checkbox" id="set-autoStats" checked> Auto-show stats</label>
           <label>Speed
             <input type="range" id="set-speed" min="0.4" max="2.5" step="0.1" value="1.4">
           </label>
@@ -44,7 +42,7 @@
       </div>
     </div>
   </div>
-  <div id="stats-panel" class="collapsed">
+  <div id="stats-panel">
     <div id="stats-letters">
       <div id="letter-grid"></div>
     </div>

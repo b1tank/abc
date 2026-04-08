@@ -3,7 +3,6 @@ const ctx = canvas.getContext('2d');
 const gameBtn = document.getElementById('gameBtn');
 const continueBtn = document.getElementById('continueBtn');
 const scoreDisplay = document.getElementById('score-display');
-const statsToggle = document.getElementById('statsToggle');
 const statsPanel = document.getElementById('stats-panel');
 const letterGrid = document.getElementById('letter-grid');
 const settingsBtn = document.getElementById('settingsBtn');
@@ -23,7 +22,7 @@ let letterStats = {};
 
 // ── Settings & persistence ──
 const STORAGE_KEY = 'abc-balloon-game';
-const defaultSettings = { wiggle: true, autoStats: true, speed: 1.4, balloonSize: 75 };
+const defaultSettings = { wiggle: true, speed: 1.4, balloonSize: 75 };
 
 function loadSaved() {
   try {
@@ -46,17 +45,12 @@ if (saved) {
 
 // Apply saved settings to UI controls
 document.getElementById('set-wiggle').checked = settings.wiggle;
-document.getElementById('set-autoStats').checked = settings.autoStats;
 document.getElementById('set-speed').value = String(settings.speed);
 document.getElementById('set-size').value = String(settings.balloonSize);
 
 document.getElementById('set-wiggle').addEventListener('change', function () {
   settings.wiggle = this.checked;
   for (const b of balloons) b.wiggleAmp = settings.wiggle ? (0.3 + Math.random() * 0.5) : 0;
-  saveState();
-});
-document.getElementById('set-autoStats').addEventListener('change', function () {
-  settings.autoStats = this.checked;
   saveState();
 });
 document.getElementById('set-speed').addEventListener('input', function () {
@@ -94,12 +88,28 @@ function buildLetterGrid() {
     cell.className = 'letter-cell';
     cell.id = 'lc-' + l;
     cell.innerHTML = '<span class="lc-letter">' + l + '</span><span class="lc-count"></span>';
+    cell.addEventListener('click', function () {
+      if (!gameActive) return;
+      const key = l;
+      const idx = balloons.findIndex(function (b) { return b.letter === key; });
+      if (idx !== -1) {
+        popBalloon(idx);
+        balloons.push(createBalloon(key, { index: letters.indexOf(key) }));
+      } else {
+        balloons.push(createBalloon(key, { index: letters.indexOf(key) }));
+      }
+    });
     letterGrid.appendChild(cell);
   }
 }
 
 function updateStatsUI() {
   scoreDisplay.textContent = '\uD83C\uDF88 ' + score;
+  if (score > 0) {
+    statsPanel.classList.remove('collapsed');
+  } else {
+    statsPanel.classList.add('collapsed');
+  }
   for (const l of letters) {
     const cell = document.getElementById('lc-' + l);
     if (!cell) continue;
@@ -118,16 +128,10 @@ function updateStatsUI() {
   }
 }
 
-function toggleStats() {
-  statsPanel.classList.toggle('collapsed');
-  statsToggle.classList.toggle('active');
-}
 function openStats() {
   statsPanel.classList.remove('collapsed');
-  statsToggle.classList.add('active');
 }
 
-statsToggle.addEventListener('click', toggleStats);
 buildLetterGrid();
 updateStatsUI();
 updateButtons();
@@ -204,12 +208,11 @@ function drawBalloon(b) {
   ctx.beginPath();
   ctx.moveTo(b.x, b.y + b.size * b.bRatio / 2);
   ctx.lineTo(b.x, b.y + b.size * b.bRatio / 2 + b.size * 1.2);
-  ctx.strokeStyle = '#888'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = b.color; ctx.lineWidth = 2; ctx.stroke();
 
   ctx.beginPath();
   ctx.ellipse(b.x, b.y, b.size * b.aRatio, b.size * b.bRatio / 2, 0, 0, 2 * Math.PI);
   ctx.fillStyle = b.color; ctx.fill();
-  ctx.strokeStyle = '#888'; ctx.lineWidth = 2; ctx.stroke();
 
   ctx.font = 'bold ' + (b.size / 2) + 'px sans-serif';
   ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -291,7 +294,6 @@ function startGame() {
   updateStatsUI();
   updateButtons();
   saveState();
-  if (settings.autoStats) openStats();
   window.addEventListener('keydown', handleKey);
   gameLoop();
 }
