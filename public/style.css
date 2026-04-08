@@ -363,6 +363,48 @@ body {
   transform: translateX(16px);
 }
 
+/* ── Math visual hint ── */
+#topbar-center {
+  position: relative;
+}
+#math-hint {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 6px 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-wrap: wrap;
+  max-width: 280px;
+  justify-content: center;
+  line-height: 1;
+}
+#math-hint.hidden {
+  display: none;
+}
+.hint-item {
+  font-size: clamp(16px, 3vw, 24px);
+  transition: opacity 0.2s;
+}
+.hint-plus {
+  font-size: clamp(14px, 2.5vw, 20px);
+  font-weight: 700;
+  color: #ffb347;
+  margin: 0 3px;
+}
+.hint-removed {
+  opacity: 0.25;
+  text-decoration: line-through;
+  filter: grayscale(1);
+}
+
 /* ── Mode buttons ── */
 .mode-btn {
   font-size: clamp(14px, 2.2vw, 20px);

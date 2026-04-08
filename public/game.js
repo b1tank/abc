@@ -30,11 +30,11 @@ var modeStats = {
 };
 var currentMode = 'free';
 var currentChallenge = null;
-var rewards = {};
+var rewards = 0;
 var streak = 0;
 
-// ── Reward emoji pool ──
-var REWARD_EMOJIS = ['\uD83C\uDF5C','\uD83E\uDD6D','\uD83C\uDF4D','\uD83C\uDF6B','\uD83E\uDD5A'];
+// ── Math hint emoji pool ──
+var MATH_HINT_EMOJIS = ['\uD83E\uDD5A','\uD83C\uDF4E','\u2B50','\uD83D\uDC1F','\uD83C\uDF52','\uD83E\uDD8B','\uD83C\uDF53','\uD83D\uDC3E'];
 
 // ── Word bank (common flashcard words with emoji hints) ──
 var WORD_BANK = [
@@ -111,7 +111,7 @@ if (saved) {
     // Migrate old format
     modeStats.free = { score: saved.score || 0, letterStats: saved.letterStats || {} };
   }
-  rewards = saved.rewards || {};
+  rewards = saved.rewards || 0;
   if (saved.currentMode) currentMode = saved.currentMode;
 }
 
@@ -256,7 +256,11 @@ function createMathChallenge() {
     prompt: prompt + ' = ?',
     answer: [String(result)],
     progress: 0,
-    rewardEmoji: randomRewardEmoji()
+    rewardEmoji: randomRewardEmoji(),
+    mathA: a,
+    mathB: b,
+    mathIsAdd: isAdd,
+    hintEmoji: MATH_HINT_EMOJIS[Math.floor(Math.random() * MATH_HINT_EMOJIS.length)]
   };
 }
 
@@ -314,21 +318,18 @@ function handleChallengeInput(key) {
   }
 }
 
-function addReward(emoji) {
-  if (!rewards[emoji]) rewards[emoji] = 0;
-  rewards[emoji]++;
+function addReward() {
+  rewards++;
 }
 
 function totalRewards() {
-  var t = 0;
-  for (var k in rewards) t += rewards[k];
-  return t;
+  return rewards;
 }
 
 function completeChallenge() {
-  addReward(currentChallenge.rewardEmoji);
+  addReward();
   if (streak >= 3 && streak % 3 === 0) {
-    addReward(randomRewardEmoji());
+    addReward();
   }
   modeStats[currentMode].score++;
   updateRewardsUI();
@@ -483,18 +484,52 @@ function updateChallengeUI() {
       } else {
         challengeDisplay.textContent = currentChallenge.prompt;
       }
+      updateMathHint();
     }
   }
 }
 
-function updateRewardsUI() {
-  var parts = [];
-  for (var i = 0; i < REWARD_EMOJIS.length; i++) {
-    var e = REWARD_EMOJIS[i];
-    var c = rewards[e] || 0;
-    if (c > 0) parts.push(e + c);
+// ── Math visual hint ──
+var mathHintEl = document.getElementById('math-hint');
+
+function updateMathHint() {
+  if (!currentChallenge || currentChallenge.type !== 'math') {
+    mathHintEl.innerHTML = '';
+    mathHintEl.classList.add('hidden');
+    return;
   }
-  rewardsDisplay.textContent = parts.join(' ');
+  var c = currentChallenge;
+  var e = c.hintEmoji;
+  var html = '';
+  if (c.mathIsAdd) {
+    // Addition: group A + group B
+    for (var i = 0; i < c.mathA; i++) html += '<span class="hint-item">' + e + '</span>';
+    if (c.mathA > 0 && c.mathB > 0) html += '<span class="hint-plus">+</span>';
+    for (var j = 0; j < c.mathB; j++) html += '<span class="hint-item">' + e + '</span>';
+  } else {
+    // Subtraction: show A items, last B are crossed out
+    var keep = c.mathA - c.mathB;
+    for (var k = 0; k < keep; k++) html += '<span class="hint-item">' + e + '</span>';
+    for (var m = 0; m < c.mathB; m++) html += '<span class="hint-item hint-removed">' + e + '</span>';
+  }
+  mathHintEl.innerHTML = html;
+}
+
+challengeDisplay.addEventListener('mouseenter', function () {
+  if (currentChallenge && currentChallenge.type === 'math') mathHintEl.classList.remove('hidden');
+});
+challengeDisplay.addEventListener('mouseleave', function () {
+  mathHintEl.classList.add('hidden');
+});
+challengeDisplay.addEventListener('touchstart', function (e) {
+  if (currentChallenge && currentChallenge.type === 'math') {
+    mathHintEl.classList.toggle('hidden');
+    e.preventDefault();
+  }
+}, { passive: false });
+
+function updateRewardsUI() {
+  rewardsDisplay.textContent = rewards > 0 ? '\uD83C\uDF88' + rewards : '';
 }
 
 function updateStatsUI() {
@@ -710,7 +745,7 @@ function startGame() {
 function doRestart() {
   modeStats[currentMode].score = 0;
   if (currentMode === 'free') modeStats.free.letterStats = {};
-  rewards = {};
+  rewards = 0;
   streak = 0;
   currentChallenge = null;
   updateRewardsUI();
