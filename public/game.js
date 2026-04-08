@@ -111,7 +111,7 @@ if (saved) {
     // Migrate old format
     modeStats.free = { score: saved.score || 0, letterStats: saved.letterStats || {} };
   }
-  rewards = saved.rewards || 0;
+  rewards = (typeof saved.rewards === 'number') ? saved.rewards : 0;
   if (saved.currentMode) currentMode = saved.currentMode;
 }
 
