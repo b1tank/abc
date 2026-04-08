@@ -11,13 +11,18 @@
 <body>
   <div id="topbar">
     <div id="topbar-left">
+      <button id="mode-free" class="mode-btn mode-active" title="Free Play">🎈</button>
+      <button id="mode-spell" class="mode-btn" title="Spelling">🔤</button>
+      <button id="mode-math" class="mode-btn" title="Math">🔢</button>
       <button id="continueBtn" class="hidden">Continue</button>
       <button id="gameBtn">Start</button>
     </div>
     <div id="topbar-center">
       <span id="score-display">🎈 0</span>
+      <span id="challenge-display" class="hidden"></span>
     </div>
     <div id="topbar-right">
+      <span id="rewards-display"></span>
       <div id="settings-wrap">
         <button id="settingsBtn" aria-label="Settings">⚙</button>
         <div id="settings-dropdown" class="hidden">

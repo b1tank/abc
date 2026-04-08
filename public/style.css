@@ -46,6 +46,8 @@ body {
 
 #topbar-right {
   display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 #topbar #gameBtn {
@@ -318,4 +320,92 @@ body {
 }
 #modal-confirm:active {
   background: #e04040;
+}
+
+/* ── Mode buttons ── */
+.mode-btn {
+  font-size: clamp(14px, 2.2vw, 20px);
+  padding: 2px 6px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+  line-height: 1;
+  transition: border-color 0.2s;
+}
+.mode-btn.mode-active {
+  border-color: #ffb347;
+  background: rgba(255, 179, 71, 0.15);
+}
+.mode-btn:active {
+  transform: scale(0.95);
+}
+
+/* ── Challenge display ── */
+#challenge-display {
+  font-size: clamp(14px, 2.5vw, 22px);
+  font-weight: 700;
+  color: #555;
+  letter-spacing: 2px;
+}
+#challenge-display.hidden {
+  display: none;
+}
+.hidden {
+  display: none;
+}
+
+/* ── Rewards display ── */
+#rewards-display {
+  font-size: clamp(12px, 2vw, 18px);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* ── Grid challenge highlights ── */
+#letter-grid .letter-cell.challenge-target {
+  border: 2px solid #ffb347;
+  background: #fff3e0;
+  color: #333;
+}
+#letter-grid .letter-cell.challenge-next {
+  border: 2px solid #ff6b6b;
+  background: #fff0f0;
+  color: #333;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+#letter-grid .letter-cell.challenge-done {
+  background: #69c97b;
+  color: #fff;
+  border: 2px solid #69c97b;
+}
+#letter-grid .letter-cell.challenge-dimmed {
+  opacity: 0.35;
+}
+
+/* ── Grid math layout ── */
+#letter-grid.math-grid {
+  grid-template-columns: repeat(11, 1fr);
+}
+
+/* ── Animations ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2); }
+}
+#letter-grid .letter-cell.shake {
+  animation: shake 0.4s ease;
+}
+
+@media (max-width: 600px) {
+  #letter-grid.math-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
