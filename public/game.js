@@ -157,7 +157,12 @@ document.getElementById('set-speed').addEventListener('input', function () {
   saveState();
 });
 document.getElementById('set-size').addEventListener('input', function () {
+  var oldSize = settings.balloonSize;
   settings.balloonSize = parseInt(this.value, 10);
+  var ratio = settings.balloonSize / (oldSize || 75);
+  for (var i = 0; i < balloons.length; i++) {
+    balloons[i].size *= ratio;
+  }
   saveState();
 });
 document.getElementById('set-spellHints').addEventListener('change', function () {
