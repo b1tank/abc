@@ -49,7 +49,7 @@ var WORD_BANK = [
 
 // ── Settings & persistence ──
 var STORAGE_KEY = 'abc-balloon-game';
-var defaultSettings = { wiggle: true, speed: 1.4, balloonSize: 75 };
+var defaultSettings = { wiggle: true, speed: 1.4, balloonSize: 75, spellHints: false, mathHints: false };
 
 function loadSaved() {
   try {
@@ -79,6 +79,8 @@ if (saved) {
 document.getElementById('set-wiggle').checked = settings.wiggle;
 document.getElementById('set-speed').value = String(settings.speed);
 document.getElementById('set-size').value = String(settings.balloonSize);
+document.getElementById('set-spellHints').checked = settings.spellHints;
+document.getElementById('set-mathHints').checked = settings.mathHints;
 
 document.getElementById('set-wiggle').addEventListener('change', function () {
   settings.wiggle = this.checked;
@@ -93,6 +95,16 @@ document.getElementById('set-speed').addEventListener('input', function () {
 });
 document.getElementById('set-size').addEventListener('input', function () {
   settings.balloonSize = parseInt(this.value, 10);
+  saveState();
+});
+document.getElementById('set-spellHints').addEventListener('change', function () {
+  settings.spellHints = this.checked;
+  updateGridHighlights();
+  saveState();
+});
+document.getElementById('set-mathHints').addEventListener('change', function () {
+  settings.mathHints = this.checked;
+  updateGridHighlights();
   saveState();
 });
 
@@ -165,8 +177,8 @@ function createMathChallenge() {
     result = a + b;
     prompt = a + ' + ' + b;
   } else {
-    a = Math.floor(Math.random() * 11);
-    b = Math.floor(Math.random() * (a + 1));
+    a = 1 + Math.floor(Math.random() * 10);
+    b = Math.floor(Math.random() * a);
     result = a - b;
     prompt = a + ' \u2212 ' + b;
   }
@@ -206,7 +218,7 @@ function spawnChallengeBalloons() {
     distractors.sort(function () { return Math.random() - 0.5; });
     balloonLabels = wordLetters.concat(distractors.slice(0, numD));
   } else if (currentChallenge.type === 'math') {
-    for (var n = 0; n <= 9; n++) balloonLabels.push(String(n));
+    for (var n = 0; n <= 10; n++) balloonLabels.push(String(n));
   }
   for (var j = 0; j < balloonLabels.length; j++) {
     balloons.push(createBalloon(balloonLabels[j], { index: j, totalCount: balloonLabels.length }));
@@ -308,17 +320,17 @@ function updateGridHighlights() {
     var cell = allCells[j];
     var val = cell.querySelector('.lc-letter').textContent;
     if (currentChallenge.type === 'spell') {
-      if (val === nextChar) {
-        cell.classList.add('challenge-next');
-      } else if (completedChars[val]) {
+      if (completedChars[val]) {
         cell.classList.add('challenge-done');
+      } else if (val === nextChar && settings.spellHints) {
+        cell.classList.add('challenge-next');
       } else if (targetSet[val]) {
         cell.classList.add('challenge-target');
       } else {
         cell.classList.add('challenge-dimmed');
       }
     } else if (currentChallenge.type === 'math') {
-      if (val === nextChar) {
+      if (settings.mathHints && val === nextChar) {
         cell.classList.add('challenge-next');
       }
     }

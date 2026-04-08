@@ -387,18 +387,37 @@ body {
 #letter-grid.math-grid {
   grid-template-columns: repeat(11, 1fr);
 }
+#letter-grid.math-grid .letter-cell {
+  font-size: clamp(24px, 5vw, 48px);
+}
 
 /* ── Animations ── */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-3px); }
-  80% { transform: translateX(3px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(3px);
+  }
 }
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4); }
-  50% { box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.2);
+  }
 }
 #letter-grid .letter-cell.shake {
   animation: shake 0.4s ease;
@@ -407,5 +426,8 @@ body {
 @media (max-width: 600px) {
   #letter-grid.math-grid {
     grid-template-columns: repeat(6, 1fr);
+  }
+  #letter-grid.math-grid .letter-cell {
+    font-size: clamp(20px, 8vw, 36px);
   }
 }
