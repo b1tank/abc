@@ -299,8 +299,13 @@ function handleKey(e) {
     const popped = balloons.splice(idx, 1)[0];
     // Add pop effect
     popParticles.push(...createPopParticles(popped));
+    touchScore++;
+    // Track stats
+    if (!letterStats[key]) letterStats[key] = { color: popped.color, count: 0 };
+    letterStats[key].color = popped.color;
+    letterStats[key].count++;
+    updateStatsUI();
     // Respawn a new balloon with same letter and horizontal position
-    // Find the index for the letter in the alphabet for X position
     const letterIndex = letters.indexOf(key);
     if (letterIndex !== -1) {
       balloons.push(createBalloon(key, letterIndex));
@@ -355,15 +360,13 @@ function handleCanvasInteraction(x, y) {
       const popped = balloons.splice(i, 1)[0];
       popParticles.push(...createPopParticles(popped));
 
+      touchScore++;
       if (!isTouchDevice) {
         // Desktop: respawn same letter at fixed X position
         const letterIndex = letters.indexOf(popped.letter);
         if (letterIndex !== -1) {
           balloons.push(createBalloon(popped.letter, letterIndex));
         }
-      } else {
-        // Touch mode: score!
-        touchScore++;
       }
       // Track stats
       if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
