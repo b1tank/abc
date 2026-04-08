@@ -56,9 +56,6 @@ function updateStatsUI() {
 function toggleStats() {
   statsPanel.classList.toggle('collapsed');
   statsToggle.classList.toggle('active');
-  document.body.classList.toggle('stats-open');
-  // Resize canvas after transition
-  setTimeout(resizeCanvas, 260);
 }
 
 statsToggle.addEventListener('click', toggleStats);
@@ -90,6 +87,7 @@ function resizeCanvas() {
   calculateBalloonXPositions();
 }
 window.addEventListener('resize', resizeCanvas);
+new ResizeObserver(() => resizeCanvas()).observe(document.getElementById('canvas-container'));
 resizeCanvas();
 
 function randomColor() {
@@ -114,39 +112,22 @@ function randomEllipseRatio() {
   return { aRatio, bRatio };
 }
 
-function createBalloon(letter, index) {
+function createBalloon(letter, opts) {
   const size = randomSize();
   const { aRatio, bRatio } = randomEllipseRatio();
-  // Use pre-calculated X position for each letter
-  const x = balloonXPositions[index] || (canvas.width / (window.devicePixelRatio || 1) / 2);
+  const dpr = window.devicePixelRatio || 1;
+  const index = (opts && opts.index !== undefined) ? opts.index : letters.indexOf(letter);
   return {
     letter,
-    x,
-    y: canvas.height / (window.devicePixelRatio || 1) + size,
+    x: (opts && opts.x !== undefined) ? opts.x : (balloonXPositions[index] || (canvas.width / dpr / 2)),
+    y: (opts && opts.y !== undefined) ? opts.y : (canvas.height / dpr + size),
     size,
     color: randomColor(),
-    speed: 1.5 + Math.random() * 1.5,
+    speed: 1.2 + Math.random() * 1.5,
     aRatio,
     bRatio,
     wiggleOffset: Math.random() * Math.PI * 2,
-    wiggleAmp: isTouchDevice ? (0.3 + Math.random() * 0.5) : 0
-  };
-}
-
-function createBalloonAtPosition(letter, x, y) {
-  const size = randomSize();
-  const { aRatio, bRatio } = randomEllipseRatio();
-  return {
-    letter,
-    x,
-    y,
-    size,
-    color: randomColor(),
-    speed: 1.2 + Math.random() * 1.0,
-    aRatio,
-    bRatio,
-    wiggleOffset: Math.random() * Math.PI * 2,
-    wiggleAmp: 0.4 + Math.random() * 0.4
+    wiggleAmp: 0.3 + Math.random() * 0.5
   };
 }
 
@@ -289,32 +270,29 @@ function restartGame() {
   window.removeEventListener('keydown', handleKey);
 }
 
+function popBalloon(index) {
+  const popped = balloons.splice(index, 1)[0];
+  popParticles.push(...createPopParticles(popped));
+  touchScore++;
+  if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
+  letterStats[popped.letter].color = popped.color;
+  letterStats[popped.letter].count++;
+  updateStatsUI();
+  return popped;
+}
+
 function handleKey(e) {
   if (!gameActive) return;
   const key = e.key.toUpperCase();
-  // Check if a balloon with this letter exists on screen
   const idx = balloons.findIndex(b => b.letter === key);
   if (idx !== -1) {
-    // Pop the balloon (remove it)
-    const popped = balloons.splice(idx, 1)[0];
-    // Add pop effect
-    popParticles.push(...createPopParticles(popped));
-    touchScore++;
-    // Track stats
-    if (!letterStats[key]) letterStats[key] = { color: popped.color, count: 0 };
-    letterStats[key].color = popped.color;
-    letterStats[key].count++;
-    updateStatsUI();
-    // Respawn a new balloon with same letter and horizontal position
-    const letterIndex = letters.indexOf(key);
-    if (letterIndex !== -1) {
-      balloons.push(createBalloon(key, letterIndex));
-    }
+    popBalloon(idx);
+    // Respawn at fixed column position
+    balloons.push(createBalloon(key, { index: letters.indexOf(key) }));
   } else {
-    // If not on screen, spawn a new balloon for this letter
     const letterIndex = letters.indexOf(key);
     if (letterIndex !== -1) {
-      balloons.push(createBalloon(key, letterIndex));
+      balloons.push(createBalloon(key, { index: letterIndex }));
     }
   }
 }
@@ -330,9 +308,8 @@ function isPointInBalloon(x, y, balloon) {
   return (((x - h) ** 2) / (a ** 2) + ((y - k) ** 2) / (b ** 2)) <= 1;
 }
 
-function handleCanvasClick(e) {
+function handlePointer(e) {
   if (!gameActive) return;
-  // Adjust for canvas scaling (high-DPI)
   const rect = canvas.getBoundingClientRect();
   const dpr = window.devicePixelRatio || 1;
   const x = (e.clientX - rect.left) * (canvas.width / rect.width) / dpr;
@@ -340,56 +317,27 @@ function handleCanvasClick(e) {
   handleCanvasInteraction(x, y);
 }
 
-function handleCanvasTouch(e) {
-  if (!gameActive) return;
-  e.preventDefault(); // Prevent double-fire and scroll
-  const touch = e.changedTouches[0];
-  const rect = canvas.getBoundingClientRect();
-  const dpr = window.devicePixelRatio || 1;
-  const x = (touch.clientX - rect.left) * (canvas.width / rect.width) / dpr;
-  const y = (touch.clientY - rect.top) * (canvas.height / rect.height) / dpr;
-  handleCanvasInteraction(x, y);
-}
-
 function handleCanvasInteraction(x, y) {
   // Check balloons from topmost to bottom (reverse order)
   for (let i = balloons.length - 1; i >= 0; i--) {
-    const balloon = balloons[i];
-    if (isPointInBalloon(x, y, balloon)) {
-      // Pop the balloon
-      const popped = balloons.splice(i, 1)[0];
-      popParticles.push(...createPopParticles(popped));
-
-      touchScore++;
+    if (isPointInBalloon(x, y, balloons[i])) {
+      const popped = popBalloon(i);
+      // Desktop: respawn same letter at fixed X position
       if (!isTouchDevice) {
-        // Desktop: respawn same letter at fixed X position
-        const letterIndex = letters.indexOf(popped.letter);
-        if (letterIndex !== -1) {
-          balloons.push(createBalloon(popped.letter, letterIndex));
-        }
+        balloons.push(createBalloon(popped.letter, { index: letters.indexOf(popped.letter) }));
       }
-      // Track stats
-      if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
-      letterStats[popped.letter].color = popped.color;
-      letterStats[popped.letter].count++;
-      updateStatsUI();
-      // Touch mode: don't auto-respawn — letter returns to available pool
       return;
     }
   }
-
-  // Touch mode: tap on empty area → spawn a new balloon from available letters
-  if (isTouchDevice) {
-    const available = getAvailableLetters();
-    if (available.length > 0) {
-      const letter = available[Math.floor(Math.random() * available.length)];
-      balloons.push(createBalloonAtPosition(letter, x, y));
-    }
+  // Tap/click on empty area → spawn a new balloon from available letters
+  const available = getAvailableLetters();
+  if (available.length > 0) {
+    const letter = available[Math.floor(Math.random() * available.length)];
+    balloons.push(createBalloon(letter, { x, y }));
   }
 }
 
-canvas.addEventListener('click', handleCanvasClick);
-canvas.addEventListener('touchend', handleCanvasTouch, { passive: false });
+canvas.addEventListener('pointerup', handlePointer);
 startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', restartGame);
 

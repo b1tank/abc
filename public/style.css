@@ -12,6 +12,8 @@ body {
 }
 body {
   height: 100%;
+  display: flex;
+  flex-direction: column;
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: #f0f8ff;
@@ -26,23 +28,32 @@ body {
   background: #fff8dc;
   z-index: 10;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  height: 44px;
+  min-height: 44px;
 }
 #topbar-left {
   display: flex;
   gap: 6px;
+  align-items: center;
 }
 #topbar-center {
   font-weight: 700;
-  font-size: 16px;
+  font-size: clamp(16px, 3vw, 24px);
   color: #333;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+#highscore-display {
+  font-size: clamp(11px, 1.8vw, 15px);
+  color: #999;
+  font-weight: 600;
 }
 #topbar-right {
   display: flex;
 }
 
 #topbar button {
-  font-size: 13px;
+  font-size: clamp(13px, 1.8vw, 16px);
   padding: 4px 12px;
   border: none;
   border-radius: 6px;
@@ -84,8 +95,6 @@ body {
   background: #fffdf5;
   border-bottom: 1px solid #eee;
   padding: 8px 10px;
-  display: flex;
-  gap: 12px;
   z-index: 9;
   overflow: hidden;
   transition:
@@ -102,24 +111,15 @@ body {
   border-bottom: none;
 }
 
-.stats-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #999;
-  letter-spacing: 0.5px;
-  display: block;
-  margin-bottom: 4px;
-}
-
 #stats-letters {
-  flex: 1;
+  width: 100%;
 }
 
 #letter-grid {
   display: grid;
   grid-template-columns: repeat(13, 1fr);
-  gap: 2px;
+  gap: clamp(2px, 0.4vw, 5px);
+  max-width: 700px;
 }
 #letter-grid .letter-cell {
   position: relative;
@@ -128,13 +128,12 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: clamp(12px, 2.5vw, 22px);
   font-weight: 700;
   border-radius: 4px;
   background: #eee;
   color: #bbb;
   transition: all 0.2s;
-  max-width: 36px;
 }
 #letter-grid .letter-cell.popped {
   color: #fff;
@@ -145,19 +144,19 @@ body {
 }
 .lc-count {
   position: absolute;
-  top: -5px;
-  right: -5px;
-  font-size: 11px;
+  top: clamp(-6px, -0.8vw, -4px);
+  right: clamp(-6px, -0.8vw, -4px);
+  font-size: clamp(9px, 1.5vw, 14px);
   font-weight: 700;
   color: #fff;
   background: rgba(0, 0, 0, 0.5);
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
+  min-width: clamp(15px, 2.2vw, 22px);
+  height: clamp(15px, 2.2vw, 22px);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 3px;
+  padding: 0 2px;
   line-height: 1;
   z-index: 2;
 }
@@ -167,15 +166,12 @@ body {
 
 /* ── Canvas ── */
 #canvas-container {
+  flex: 1;
+  min-height: 0;
   width: 100%;
-  height: calc(100vh - 44px);
   position: relative;
   background: #e0f7fa;
   overflow: hidden;
-  transition: height 0.25s ease;
-}
-body.stats-open #canvas-container {
-  height: calc(100vh - 44px - 72px);
 }
 
 #balloonCanvas {
@@ -187,21 +183,118 @@ body.stats-open #canvas-container {
   top: 0;
   left: 0;
   z-index: 1;
+  touch-action: none;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 400px) {
   #topbar {
-    height: 40px;
-    padding: 4px 8px;
+    padding: 4px 6px;
+  }
+  #topbar-left {
+    gap: 4px;
   }
   #topbar button {
-    font-size: 12px;
-    padding: 3px 10px;
-  }
-  #canvas-container {
-    height: calc(100vh - 40px);
-  }
-  body.stats-open #canvas-container {
-    height: calc(100vh - 40px - 68px);
+    padding: 3px 8px;
   }
 }
+
+/* ── Game button states ── */
+#gameBtn.restart {
+  background: #ff6b6b;
+}
+#gameBtn.restart:active {
+  background: #e04040;
+}
+
+/* ── Settings ── */
+#settings-wrap {
+  position: relative;
+}
+#settingsBtn {
+  font-size: clamp(16px, 2.5vw, 22px);
+  line-height: 1;
+  padding: 3px 8px;
+}
+#settings-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 170px;
+  font-size: clamp(13px, 1.8vw, 15px);
+}
+#settings-dropdown.hidden { display: none; }
+#settings-dropdown label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  color: #444;
+}
+#settings-dropdown select {
+  margin-left: auto;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: inherit;
+}
+
+/* ── Modal ── */
+#modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+#modal-overlay.hidden { display: none; }
+#modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  text-align: center;
+  max-width: 320px;
+  width: 90vw;
+}
+#modal-msg {
+  font-size: clamp(15px, 2.5vw, 18px);
+  color: #333;
+  margin-bottom: 18px;
+  line-height: 1.4;
+}
+#modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+#modal-actions button {
+  font-size: clamp(14px, 2vw, 16px);
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+#modal-cancel {
+  background: #eee;
+  color: #555;
+}
+#modal-cancel:active { background: #ddd; }
+#modal-confirm {
+  background: #ff6b6b;
+  color: #fff;
+}
+#modal-confirm:active { background: #e04040; }
