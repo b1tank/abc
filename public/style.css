@@ -32,7 +32,7 @@ body {
 }
 #topbar-left {
   display: flex;
-  gap: 6px;
+  gap: 3px;
   align-items: center;
 }
 #topbar-center {
@@ -325,13 +325,14 @@ body {
 /* ── Mode buttons ── */
 .mode-btn {
   font-size: clamp(14px, 2.2vw, 20px);
-  padding: 2px 6px;
+  padding: 1px 3px;
   border: 2px solid transparent;
-  border-radius: 6px;
+  border-radius: 4px;
   background: none;
   cursor: pointer;
   line-height: 1;
   transition: border-color 0.2s;
+  margin: 0;
 }
 .mode-btn.mode-active {
   border-color: #ffb347;

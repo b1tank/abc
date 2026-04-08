@@ -405,10 +405,13 @@ function handleFreePlayInput(key) {
 
 // ── UI updates ──
 function updateChallengeUI() {
-  if (currentMode === 'free' || !currentChallenge) {
+  if (currentMode === 'free') {
     challengeDisplay.classList.add('hidden');
     scoreDisplay.classList.remove('hidden');
     scoreDisplay.textContent = '\uD83C\uDF88 ' + modeStats[currentMode].score;
+  } else if (!currentChallenge) {
+    challengeDisplay.classList.add('hidden');
+    scoreDisplay.classList.add('hidden');
   } else {
     scoreDisplay.classList.add('hidden');
     challengeDisplay.classList.remove('hidden');
