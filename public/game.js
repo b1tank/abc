@@ -1,6 +1,7 @@
 const canvas = document.getElementById('balloonCanvas');
 const ctx = canvas.getContext('2d');
 const gameBtn = document.getElementById('gameBtn');
+const continueBtn = document.getElementById('continueBtn');
 const scoreDisplay = document.getElementById('score-display');
 const statsToggle = document.getElementById('statsToggle');
 const statsPanel = document.getElementById('stats-panel');
@@ -22,7 +23,7 @@ let letterStats = {};
 
 // ── Settings & persistence ──
 const STORAGE_KEY = 'abc-balloon-game';
-const defaultSettings = { wiggle: true, autoStats: true, speed: 1 };
+const defaultSettings = { wiggle: true, autoStats: true, speed: 1.4, balloonSize: 75 };
 
 function loadSaved() {
   try {
@@ -47,6 +48,7 @@ if (saved) {
 document.getElementById('set-wiggle').checked = settings.wiggle;
 document.getElementById('set-autoStats').checked = settings.autoStats;
 document.getElementById('set-speed').value = String(settings.speed);
+document.getElementById('set-size').value = String(settings.balloonSize);
 
 document.getElementById('set-wiggle').addEventListener('change', function () {
   settings.wiggle = this.checked;
@@ -57,8 +59,12 @@ document.getElementById('set-autoStats').addEventListener('change', function () 
   settings.autoStats = this.checked;
   saveState();
 });
-document.getElementById('set-speed').addEventListener('change', function () {
+document.getElementById('set-speed').addEventListener('input', function () {
   settings.speed = parseFloat(this.value);
+  saveState();
+});
+document.getElementById('set-size').addEventListener('input', function () {
+  settings.balloonSize = parseInt(this.value, 10);
   saveState();
 });
 
@@ -124,6 +130,7 @@ function openStats() {
 statsToggle.addEventListener('click', toggleStats);
 buildLetterGrid();
 updateStatsUI();
+updateButtons();
 
 // ── Canvas sizing ──
 let balloonXPositions = [];
@@ -164,7 +171,7 @@ function randomColor() {
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 }
-function randomSize() { return 60 + Math.random() * 60; }
+function randomSize() { return settings.balloonSize + Math.random() * settings.balloonSize; }
 function randomEllipseRatio() {
   return { aRatio: 0.55 + Math.random() * 0.15, bRatio: 1.2 + Math.random() * 0.3 };
 }
@@ -179,7 +186,7 @@ function createBalloon(letter, opts) {
     x: (opts && opts.x !== undefined) ? opts.x : (balloonXPositions[index] || (canvas.width / dpr / 2)),
     y: (opts && opts.y !== undefined) ? opts.y : (canvas.height / dpr + size),
     size, color: randomColor(),
-    speed: (1.2 + Math.random() * 1.5) * settings.speed,
+    speed: (1.2 + Math.random() * 1.5),
     aRatio, bRatio,
     wiggleOffset: Math.random() * Math.PI * 2,
     wiggleAmp: settings.wiggle ? (0.3 + Math.random() * 0.5) : 0
@@ -243,8 +250,9 @@ function updateBalloons() {
   const time = Date.now() / 1000;
   for (let b of balloons) {
     const minY = (b.size * b.bRatio / 2) + 2;
-    if (b.y - minY > 0) { b.y -= b.speed; if (b.y - minY < 0) b.y = minY; }
-    if (b.wiggleAmp > 0) b.x += Math.sin(time * 2 + b.wiggleOffset) * b.wiggleAmp;
+    const effectiveSpeed = b.speed * settings.speed;
+    if (b.y - minY > 0) { b.y -= effectiveSpeed; if (b.y - minY < 0) b.y = minY; }
+    if (b.wiggleAmp > 0) b.x += Math.sin(time * 2 * settings.speed + b.wiggleOffset) * b.wiggleAmp * settings.speed;
   }
 }
 
@@ -260,14 +268,29 @@ function gameLoop() {
 }
 
 // ── Start / Restart ──
+function updateButtons() {
+  if (gameActive) {
+    gameBtn.textContent = 'Restart';
+    gameBtn.classList.add('restart');
+    continueBtn.classList.add('hidden');
+  } else if (score > 0) {
+    continueBtn.classList.remove('hidden');
+    gameBtn.textContent = 'Restart';
+    gameBtn.classList.add('restart');
+  } else {
+    continueBtn.classList.add('hidden');
+    gameBtn.textContent = 'Start';
+    gameBtn.classList.remove('restart');
+  }
+}
+
 function startGame() {
   gameActive = true;
   balloons = [];
   popParticles = [];
   updateStatsUI();
+  updateButtons();
   saveState();
-  gameBtn.textContent = 'Restart';
-  gameBtn.classList.add('restart');
   if (settings.autoStats) openStats();
   window.addEventListener('keydown', handleKey);
   gameLoop();
@@ -286,8 +309,12 @@ function doRestart() {
 }
 
 gameBtn.addEventListener('click', function () {
-  if (!gameActive) startGame();
+  if (!gameActive && score === 0) startGame();
   else showModal();
+});
+
+continueBtn.addEventListener('click', function () {
+  startGame();
 });
 
 // ── Pop & interaction ──

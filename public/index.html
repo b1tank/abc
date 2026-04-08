@@ -11,6 +11,7 @@
 <body>
   <div id="topbar">
     <div id="topbar-left">
+      <button id="continueBtn" class="hidden">Continue</button>
       <button id="gameBtn">Start</button>
     </div>
     <div id="topbar-center">
@@ -24,11 +25,10 @@
           <label><input type="checkbox" id="set-wiggle" checked> Wiggle</label>
           <label><input type="checkbox" id="set-autoStats" checked> Auto-show stats</label>
           <label>Speed
-            <select id="set-speed">
-              <option value="0.6">Slow</option>
-              <option value="1" selected>Normal</option>
-              <option value="1.8">Fast</option>
-            </select>
+            <input type="range" id="set-speed" min="0.4" max="2.5" step="0.1" value="1.4">
+          </label>
+          <label>Size
+            <input type="range" id="set-size" min="30" max="120" step="5" value="75">
           </label>
         </div>
       </div>

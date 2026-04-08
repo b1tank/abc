@@ -209,6 +209,22 @@ body {
 #gameBtn.restart:active {
   background: #e04040;
 }
+#continueBtn {
+  font-size: clamp(13px, 1.8vw, 16px);
+  padding: 4px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #69c97b;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#continueBtn:active {
+  background: #4da85e;
+}
+#continueBtn.hidden {
+  display: none;
+}
 
 /* ── Settings ── */
 #settings-wrap {
@@ -265,6 +281,12 @@ body {
   border-radius: 4px;
   border: 1px solid #ccc;
   font-size: inherit;
+}
+#settings-dropdown input[type="range"] {
+  margin-left: auto;
+  width: 90px;
+  cursor: pointer;
+  accent-color: #ffb347;
 }
 
 /* ── Modal ── */
