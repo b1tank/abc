@@ -1,25 +1,88 @@
 const canvas = document.getElementById('balloonCanvas');
 const ctx = canvas.getContext('2d');
-const startBtn = document.getElementById('startBtn');
-const restartBtn = document.getElementById('restartBtn');
+const gameBtn = document.getElementById('gameBtn');
 const scoreDisplay = document.getElementById('score-display');
+const highscoreDisplay = document.getElementById('highscore-display');
 const statsToggle = document.getElementById('statsToggle');
 const statsPanel = document.getElementById('stats-panel');
 const letterGrid = document.getElementById('letter-grid');
+const settingsBtn = document.getElementById('settingsBtn');
+const settingsDropdown = document.getElementById('settings-dropdown');
+const modalOverlay = document.getElementById('modal-overlay');
+const modalCancel = document.getElementById('modal-cancel');
+const modalConfirm = document.getElementById('modal-confirm');
 
 let gameActive = false;
 let balloons = [];
 const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-
-// Touch mode detection
 const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-// Popping effect particles
 let popParticles = [];
-let touchScore = 0;
-let letterStats = {}; // { A: { color: '#FF5252', count: 3 }, ... }
+let score = 0;
+let letterStats = {};
 
-// ── Stats panel UI ──
+// ── Settings & persistence ──
+const STORAGE_KEY = 'abc-balloon-game';
+const defaultSettings = { wiggle: true, autoStats: true, speed: 1 };
+
+function loadSaved() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (_) {}
+  return null;
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ score, letterStats, highScore, settings }));
+}
+
+const saved = loadSaved();
+let settings = Object.assign({}, defaultSettings, saved ? saved.settings : {});
+let highScore = (saved && saved.highScore) || 0;
+if (saved) {
+  score = saved.score || 0;
+  letterStats = saved.letterStats || {};
+}
+
+// Apply saved settings to UI controls
+document.getElementById('set-wiggle').checked = settings.wiggle;
+document.getElementById('set-autoStats').checked = settings.autoStats;
+document.getElementById('set-speed').value = String(settings.speed);
+
+document.getElementById('set-wiggle').addEventListener('change', function () {
+  settings.wiggle = this.checked;
+  for (const b of balloons) b.wiggleAmp = settings.wiggle ? (0.3 + Math.random() * 0.5) : 0;
+  saveState();
+});
+document.getElementById('set-autoStats').addEventListener('change', function () {
+  settings.autoStats = this.checked;
+  saveState();
+});
+document.getElementById('set-speed').addEventListener('change', function () {
+  settings.speed = parseFloat(this.value);
+  saveState();
+});
+
+// ── Settings dropdown ──
+settingsBtn.addEventListener('click', function (e) {
+  e.stopPropagation();
+  settingsDropdown.classList.toggle('hidden');
+});
+document.addEventListener('click', function (e) {
+  if (!settingsDropdown.contains(e.target) && e.target !== settingsBtn) {
+    settingsDropdown.classList.add('hidden');
+  }
+});
+
+// ── Modal ──
+function showModal() { modalOverlay.classList.remove('hidden'); }
+function hideModal() { modalOverlay.classList.add('hidden'); }
+modalCancel.addEventListener('click', hideModal);
+modalConfirm.addEventListener('click', function () { hideModal(); doRestart(); });
+modalOverlay.addEventListener('click', function (e) { if (e.target === modalOverlay) hideModal(); });
+
+// ── Stats panel ──
 function buildLetterGrid() {
   letterGrid.innerHTML = '';
   for (const l of letters) {
@@ -32,7 +95,8 @@ function buildLetterGrid() {
 }
 
 function updateStatsUI() {
-  scoreDisplay.textContent = '⭐ ' + touchScore;
+  scoreDisplay.textContent = '\uD83C\uDF88 ' + score;
+  highscoreDisplay.textContent = highScore > 0 ? ('Best: ' + highScore) : '';
   for (const l of letters) {
     const cell = document.getElementById('lc-' + l);
     if (!cell) continue;
@@ -41,14 +105,12 @@ function updateStatsUI() {
       cell.className = 'letter-cell popped';
       cell.style.background = stat.color;
       cell.style.color = '#fff';
-      const countEl = cell.querySelector('.lc-count');
-      if (countEl) countEl.textContent = stat.count;
+      cell.querySelector('.lc-count').textContent = stat.count;
     } else {
       cell.className = 'letter-cell';
       cell.style.background = '';
       cell.style.color = '';
-      const countEl = cell.querySelector('.lc-count');
-      if (countEl) countEl.textContent = '';
+      cell.querySelector('.lc-count').textContent = '';
     }
   }
 }
@@ -57,11 +119,16 @@ function toggleStats() {
   statsPanel.classList.toggle('collapsed');
   statsToggle.classList.toggle('active');
 }
+function openStats() {
+  statsPanel.classList.remove('collapsed');
+  statsToggle.classList.add('active');
+}
 
 statsToggle.addEventListener('click', toggleStats);
 buildLetterGrid();
+updateStatsUI();
 
-// Pre-calculate non-overlapping X positions for 26 balloons
+// ── Canvas sizing ──
 let balloonXPositions = [];
 function calculateBalloonXPositions() {
   const margin = 10;
@@ -76,13 +143,12 @@ function calculateBalloonXPositions() {
 
 function resizeCanvas() {
   const container = document.getElementById('canvas-container');
-  // High-DPI support
   const dpr = window.devicePixelRatio || 1;
   canvas.width = container.clientWidth * dpr;
   canvas.height = container.clientHeight * dpr;
   canvas.style.width = container.clientWidth + 'px';
   canvas.style.height = container.clientHeight + 'px';
-  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.scale(dpr, dpr);
   calculateBalloonXPositions();
 }
@@ -90,26 +156,20 @@ window.addEventListener('resize', resizeCanvas);
 new ResizeObserver(() => resizeCanvas()).observe(document.getElementById('canvas-container'));
 resizeCanvas();
 
+// ── Balloon helpers ──
 function randomColor() {
-  // Vibrant, kid-friendly colors
   const colors = [
-    '#FF5252', '#FFB300', '#FFD600', '#69F0AE', '#40C4FF', '#7C4DFF',
-    '#FF4081', '#FF6D00', '#C6FF00', '#00B8D4', '#00E676', '#FF1744',
-    '#F50057', '#D500F9', '#651FFF', '#2979FF', '#00E5FF', '#1DE9B6',
-    '#76FF03', '#FFEA00', '#FFC400', '#FF9100', '#FF3D00', '#C51162',
-    '#AA00FF', '#00BFAE'
+    '#FF5252','#FFB300','#FFD600','#69F0AE','#40C4FF','#7C4DFF',
+    '#FF4081','#FF6D00','#C6FF00','#00B8D4','#00E676','#FF1744',
+    '#F50057','#D500F9','#651FFF','#2979FF','#00E5FF','#1DE9B6',
+    '#76FF03','#FFEA00','#FFC400','#FF9100','#FF3D00','#C51162',
+    '#AA00FF','#00BFAE'
   ];
   return colors[Math.floor(Math.random() * colors.length)];
 }
-function randomSize() {
-  return 60 + Math.random() * 60; // 60-120px
-}
+function randomSize() { return 60 + Math.random() * 60; }
 function randomEllipseRatio() {
-  // a: horizontal radius, b: vertical radius
-  // Consistently tall and narrow balloons
-  const aRatio = 0.55 + Math.random() * 0.15; // 0.55-0.7 (narrow but not too narrow)
-  const bRatio = 1.2 + Math.random() * 0.3;   // 1.2-1.5 (consistently tall)
-  return { aRatio, bRatio };
+  return { aRatio: 0.55 + Math.random() * 0.15, bRatio: 1.2 + Math.random() * 0.3 };
 }
 
 function createBalloon(letter, opts) {
@@ -121,13 +181,11 @@ function createBalloon(letter, opts) {
     letter,
     x: (opts && opts.x !== undefined) ? opts.x : (balloonXPositions[index] || (canvas.width / dpr / 2)),
     y: (opts && opts.y !== undefined) ? opts.y : (canvas.height / dpr + size),
-    size,
-    color: randomColor(),
-    speed: 1.2 + Math.random() * 1.5,
-    aRatio,
-    bRatio,
+    size, color: randomColor(),
+    speed: (1.2 + Math.random() * 1.5) * settings.speed,
+    aRatio, bRatio,
     wiggleOffset: Math.random() * Math.PI * 2,
-    wiggleAmp: 0.3 + Math.random() * 0.5
+    wiggleAmp: settings.wiggle ? (0.3 + Math.random() * 0.5) : 0
   };
 }
 
@@ -136,50 +194,33 @@ function getAvailableLetters() {
   return letters.filter(l => !onScreen.has(l));
 }
 
-function drawBalloon(balloon) {
+// ── Drawing ──
+function drawBalloon(b) {
   ctx.save();
-  // Draw string/rope
   ctx.beginPath();
-  ctx.moveTo(balloon.x, balloon.y + balloon.size * balloon.bRatio / 2);
-  ctx.lineTo(balloon.x, balloon.y + balloon.size * balloon.bRatio / 2 + balloon.size * 1.2);
-  ctx.strokeStyle = '#888';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.moveTo(b.x, b.y + b.size * b.bRatio / 2);
+  ctx.lineTo(b.x, b.y + b.size * b.bRatio / 2 + b.size * 1.2);
+  ctx.strokeStyle = '#888'; ctx.lineWidth = 2; ctx.stroke();
 
-  // Draw vertical ellipse (balloon) with random a/b
   ctx.beginPath();
-  ctx.ellipse(balloon.x, balloon.y, balloon.size * balloon.aRatio, balloon.size * balloon.bRatio / 2, 0, 0, 2 * Math.PI);
-  ctx.fillStyle = balloon.color;
-  ctx.fill();
-  ctx.strokeStyle = '#888';
-  ctx.lineWidth = 2;
-  ctx.stroke();
+  ctx.ellipse(b.x, b.y, b.size * b.aRatio, b.size * b.bRatio / 2, 0, 0, 2 * Math.PI);
+  ctx.fillStyle = b.color; ctx.fill();
+  ctx.strokeStyle = '#888'; ctx.lineWidth = 2; ctx.stroke();
 
-  // Draw letter
-  ctx.font = `bold ${balloon.size/2}px sans-serif`;
-  ctx.fillStyle = '#fff';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(balloon.letter, balloon.x, balloon.y);
+  ctx.font = 'bold ' + (b.size / 2) + 'px sans-serif';
+  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(b.letter, b.x, b.y);
   ctx.restore();
 }
 
 function createPopParticles(balloon) {
-  // Simple burst effect: colored circles radiating out
   const particles = [];
-  const count = 12 + Math.floor(Math.random() * 6); // 12-18 particles
+  const count = 12 + Math.floor(Math.random() * 6);
   for (let i = 0; i < count; i++) {
     const angle = (2 * Math.PI * i) / count;
     const speed = 2 + Math.random() * 2;
-    particles.push({
-      x: balloon.x,
-      y: balloon.y,
-      radius: 4 + Math.random() * 4,
-      color: balloon.color,
-      dx: Math.cos(angle) * speed,
-      dy: Math.sin(angle) * speed,
-      alpha: 1.0
-    });
+    particles.push({ x: balloon.x, y: balloon.y, radius: 4 + Math.random() * 4,
+      color: balloon.color, dx: Math.cos(angle) * speed, dy: Math.sin(angle) * speed, alpha: 1.0 });
   }
   return particles;
 }
@@ -187,125 +228,103 @@ function createPopParticles(balloon) {
 function updatePopParticles() {
   for (let i = popParticles.length - 1; i >= 0; i--) {
     const p = popParticles[i];
-    p.x += p.dx;
-    p.y += p.dy;
-    p.radius *= 0.92;
-    p.alpha *= 0.92;
-    if (p.radius < 1 || p.alpha < 0.1) {
-      popParticles.splice(i, 1);
-    }
+    p.x += p.dx; p.y += p.dy; p.radius *= 0.92; p.alpha *= 0.92;
+    if (p.radius < 1 || p.alpha < 0.1) popParticles.splice(i, 1);
   }
 }
 
 function drawPopParticles() {
   for (const p of popParticles) {
-    ctx.save();
-    ctx.globalAlpha = p.alpha;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
-    ctx.fillStyle = p.color;
-    ctx.fill();
-    ctx.restore();
+    ctx.save(); ctx.globalAlpha = p.alpha;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, 2 * Math.PI);
+    ctx.fillStyle = p.color; ctx.fill(); ctx.restore();
   }
 }
 
+// ── Game loop ──
 function updateBalloons() {
   const time = Date.now() / 1000;
-  // Balloons stop at the top of the canvas
-  for (let balloon of balloons) {
-    const minY = (balloon.size * balloon.bRatio / 2) + 2; // 2px margin
-    if (balloon.y - minY > 0) {
-      balloon.y -= balloon.speed;
-      if (balloon.y - minY < 0) {
-        balloon.y = minY;
-      }
-    }
-    // Gentle horizontal wiggle (touch mode balloons)
-    if (balloon.wiggleAmp > 0) {
-      balloon.x += Math.sin(time * 2 + balloon.wiggleOffset) * balloon.wiggleAmp;
-    }
+  for (let b of balloons) {
+    const minY = (b.size * b.bRatio / 2) + 2;
+    if (b.y - minY > 0) { b.y -= b.speed; if (b.y - minY < 0) b.y = minY; }
+    if (b.wiggleAmp > 0) b.x += Math.sin(time * 2 + b.wiggleOffset) * b.wiggleAmp;
   }
-  // Do not remove balloons at the top
 }
 
 function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  for (let balloon of balloons) {
-    drawBalloon(balloon);
-  }
+  for (let b of balloons) drawBalloon(b);
   drawPopParticles();
 }
 
 function gameLoop() {
-  if (gameActive) {
-    updateBalloons();
-    updatePopParticles();
-    render();
-    requestAnimationFrame(gameLoop);
-  } else {
-    render();
-  }
+  if (gameActive) { updateBalloons(); updatePopParticles(); render(); requestAnimationFrame(gameLoop); }
+  else { render(); }
 }
 
+// ── Start / Restart ──
 function startGame() {
   gameActive = true;
   balloons = [];
   popParticles = [];
-  touchScore = 0;
+  score = 0;
   letterStats = {};
   updateStatsUI();
-  startBtn.disabled = true;
-  restartBtn.disabled = false;
+  saveState();
+  gameBtn.textContent = 'Restart';
+  gameBtn.classList.add('restart');
+  if (settings.autoStats) openStats();
   window.addEventListener('keydown', handleKey);
   gameLoop();
 }
 
-function restartGame() {
+function doRestart() {
+  if (score > highScore) highScore = score;
+  saveState();
   gameActive = false;
   balloons = [];
   popParticles = [];
   render();
-  startBtn.disabled = false;
-  restartBtn.disabled = true;
   window.removeEventListener('keydown', handleKey);
+  startGame();
 }
 
+gameBtn.addEventListener('click', function () {
+  if (!gameActive) startGame();
+  else showModal();
+});
+
+// ── Pop & interaction ──
 function popBalloon(index) {
   const popped = balloons.splice(index, 1)[0];
   popParticles.push(...createPopParticles(popped));
-  touchScore++;
+  score++;
+  if (score > highScore) highScore = score;
   if (!letterStats[popped.letter]) letterStats[popped.letter] = { color: popped.color, count: 0 };
   letterStats[popped.letter].color = popped.color;
   letterStats[popped.letter].count++;
   updateStatsUI();
+  saveState();
   return popped;
 }
 
 function handleKey(e) {
   if (!gameActive) return;
   const key = e.key.toUpperCase();
+  if (letters.indexOf(key) === -1) return;
   const idx = balloons.findIndex(b => b.letter === key);
   if (idx !== -1) {
     popBalloon(idx);
-    // Respawn at fixed column position
     balloons.push(createBalloon(key, { index: letters.indexOf(key) }));
   } else {
-    const letterIndex = letters.indexOf(key);
-    if (letterIndex !== -1) {
-      balloons.push(createBalloon(key, { index: letterIndex }));
-    }
+    balloons.push(createBalloon(key, { index: letters.indexOf(key) }));
   }
 }
 
-
-function isPointInBalloon(x, y, balloon) {
-  // Check if (x, y) is inside the ellipse of the balloon
-  // Ellipse: ((x - h)/a)^2 + ((y - k)/b)^2 <= 1
-  const a = balloon.size * balloon.aRatio;
-  const b = balloon.size * balloon.bRatio / 2;
-  const h = balloon.x;
-  const k = balloon.y;
-  return (((x - h) ** 2) / (a ** 2) + ((y - k) ** 2) / (b ** 2)) <= 1;
+function isPointInBalloon(x, y, b) {
+  const a = b.size * b.aRatio;
+  const bR = b.size * b.bRatio / 2;
+  return (((x - b.x) ** 2) / (a ** 2) + ((y - b.y) ** 2) / (bR ** 2)) <= 1;
 }
 
 function handlePointer(e) {
@@ -318,18 +337,15 @@ function handlePointer(e) {
 }
 
 function handleCanvasInteraction(x, y) {
-  // Check balloons from topmost to bottom (reverse order)
   for (let i = balloons.length - 1; i >= 0; i--) {
     if (isPointInBalloon(x, y, balloons[i])) {
       const popped = popBalloon(i);
-      // Desktop: respawn same letter at fixed X position
       if (!isTouchDevice) {
         balloons.push(createBalloon(popped.letter, { index: letters.indexOf(popped.letter) }));
       }
       return;
     }
   }
-  // Tap/click on empty area → spawn a new balloon from available letters
   const available = getAvailableLetters();
   if (available.length > 0) {
     const letter = available[Math.floor(Math.random() * available.length)];
@@ -338,15 +354,11 @@ function handleCanvasInteraction(x, y) {
 }
 
 canvas.addEventListener('pointerup', handlePointer);
-startBtn.addEventListener('click', startGame);
-restartBtn.addEventListener('click', restartGame);
 
-// On touch devices, auto-start and show touch hint
+// ── Touch auto-start ──
 if (isTouchDevice) {
-  // Auto-start after a brief delay for page load
   setTimeout(() => {
     startGame();
-    // Show a brief touch hint
     const hint = document.createElement('div');
     hint.textContent = 'Tap anywhere to spawn balloons! Tap a balloon to pop it!';
     hint.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.7);color:#fff;padding:16px 24px;border-radius:12px;font-size:18px;font-family:sans-serif;text-align:center;z-index:100;pointer-events:none;transition:opacity 1s;';
@@ -356,5 +368,4 @@ if (isTouchDevice) {
   }, 300);
 }
 
-// Initial render
 render();

@@ -40,8 +40,8 @@ body {
   font-size: clamp(16px, 3vw, 24px);
   color: #333;
   display: flex;
-  gap: 10px;
-  align-items: baseline;
+  gap: 6px;
+  align-items: center;
 }
 #highscore-display {
   font-size: clamp(11px, 1.8vw, 15px);
@@ -71,23 +71,20 @@ body {
 }
 
 #statsToggle {
-  width: 32px;
-  height: 32px;
-  padding: 4px;
   background: none;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: none;
   cursor: pointer;
-  color: #666;
-}
-#statsToggle svg {
-  width: 100%;
-  height: 100%;
+  color: #999;
+  font-size: clamp(12px, 2vw, 16px);
+  padding: 2px 4px;
+  line-height: 1;
+  transition:
+    transform 0.25s ease,
+    color 0.2s;
 }
 #statsToggle.active {
-  background: #ffb347;
-  color: #fff;
-  border-color: #ffb347;
+  transform: rotate(180deg);
+  color: #ffb347;
 }
 
 /* ── Stats panel ── */
@@ -218,12 +215,12 @@ body {
 #settings-dropdown {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  right: 0;
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 10px 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   z-index: 50;
   display: flex;
   flex-direction: column;
@@ -231,7 +228,9 @@ body {
   min-width: 170px;
   font-size: clamp(13px, 1.8vw, 15px);
 }
-#settings-dropdown.hidden { display: none; }
+#settings-dropdown.hidden {
+  display: none;
+}
 #settings-dropdown label {
   display: flex;
   align-items: center;
@@ -252,18 +251,20 @@ body {
 #modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
 }
-#modal-overlay.hidden { display: none; }
+#modal-overlay.hidden {
+  display: none;
+}
 #modal {
   background: #fff;
   border-radius: 14px;
   padding: 24px 28px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   text-align: center;
   max-width: 320px;
   width: 90vw;
@@ -292,9 +293,13 @@ body {
   background: #eee;
   color: #555;
 }
-#modal-cancel:active { background: #ddd; }
+#modal-cancel:active {
+  background: #ddd;
+}
 #modal-confirm {
   background: #ff6b6b;
   color: #fff;
 }
-#modal-confirm:active { background: #e04040; }
+#modal-confirm:active {
+  background: #e04040;
+}

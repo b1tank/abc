@@ -12,6 +12,13 @@
   <div id="topbar">
     <div id="topbar-left">
       <button id="gameBtn">Start</button>
+    </div>
+    <div id="topbar-center">
+      <span id="score-display">🎈 0</span>
+      <button id="statsToggle" aria-label="Toggle stats">▼</button>
+      <span id="highscore-display"></span>
+    </div>
+    <div id="topbar-right">
       <div id="settings-wrap">
         <button id="settingsBtn" aria-label="Settings">⚙</button>
         <div id="settings-dropdown" class="hidden">
@@ -26,19 +33,6 @@
           </label>
         </div>
       </div>
-    </div>
-    <div id="topbar-center">
-      <span id="score-display">⭐ 0</span>
-      <span id="highscore-display"></span>
-    </div>
-    <div id="topbar-right">
-      <button id="statsToggle" aria-label="Toggle stats">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="3" y1="6" x2="21" y2="6" />
-          <line x1="3" y1="12" x2="21" y2="12" />
-          <line x1="3" y1="18" x2="21" y2="18" />
-        </svg>
-      </button>
     </div>
   </div>
   <!-- Restart confirmation modal -->
