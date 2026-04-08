@@ -1,9 +1,0 @@
-repos:
-  - repo: local
-    hooks:
-      - id: public-changes-deploy
-        name: Run image upload and deploy if public/ changes
-        entry: bash -c './3-image_upload.sh && ./4-deploy_stack.sh'
-        language: system
-        types: [file]
-        files: ^public/
