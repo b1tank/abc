@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffe2f1">
+<title>Little word cards</title>
+<style>
+:root{font-family:ui-rounded,"Arial Rounded MT Bold",system-ui,sans-serif;color:#253e38;background:#f6f4ed;font-synthesis:none}*{box-sizing:border-box}body{margin:0;padding:30px 18px 45px}main{max-width:740px;margin:auto}header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:25px}.brand{font-size:19px;font-weight:800}.brand span{color:#c37340}button{font:inherit;cursor:pointer;border:0;touch-action:manipulation}button:focus-visible{outline:4px solid #da963d;outline-offset:4px}button:disabled{cursor:default;opacity:.5}h1{font-size:clamp(28px,6vw,40px);letter-spacing:-1.4px;margin:10px 0}p{line-height:1.6}.intro{color:#6b776f;margin:0 0 24px}.tabs{display:flex;padding:5px;background:#e9e9df;border-radius:16px;gap:5px}.tab{background:transparent;padding:10px 19px;border-radius:12px;font-weight:700;color:#627169}.tab[aria-selected=true]{background:white;color:#254f41;box-shadow:0 2px 8px #243d3010}.card{background:#fffdf9;border:1px solid #e7e5da;border-radius:28px;padding:28px 24px;text-align:center;box-shadow:0 10px 35px #3c463708}.eyebrow{font-size:12px;letter-spacing:2px;font-weight:750;color:#8a8d7b;text-transform:uppercase}.letters{display:flex;justify-content:center;gap:7px;margin:27px 0 12px;min-height:145px;align-items:center}.letter{background:#f0f2e9;border-radius:20px;color:#285447;font-size:clamp(68px,16vw,112px);font-weight:750;line-height:1.1;min-width:70px;padding:6px 13px 14px;position:relative;transition:background .15s,transform .15s}.letter:hover{transform:translateY(-4px);background:#e1ebda}.letter.vowel{color:#b76339;background:#fcf0e2}.letter.silent{color:#9b9e96;background:#f0f0ec}.letter.playing{background:#f9d991;transform:translateY(-5px)}.sound-label{display:block;font-size:13px;line-height:1.2;font-weight:600;margin-top:7px;letter-spacing:0}.hint{font-size:14px;color:#7e8577;margin:0 0 23px}.primary{background:#315e4d;color:white;border-radius:15px;padding:16px 26px;font-size:18px;font-weight:750;min-height:56px}.primary:hover{background:#214a3a}.secondary{background:#eff0e7;color:#355648;border-radius:14px;padding:14px 18px;font-weight:650;min-height:50px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}.note{background:#f6f4ec;border-radius:15px;padding:13px 18px;text-align:left;margin:24px 0 0;min-height:71px;font-size:15px;color:#58685d}.example{color:#627267;margin:18px 0 0;font-size:18px}.example strong{color:#315e4d}.navigation{display:flex;align-items:center;justify-content:space-between;margin:20px 0}.navigation button{background:white;border:1px solid #e3e5da;border-radius:14px;padding:12px 18px;color:#365647;font-weight:650}.counter{color:#7b8579;font-size:14px}.word-picker{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.word-picker button{font-size:20px;border-radius:13px;background:#e8ebe0;color:#546b5a;padding:10px 17px;min-width:51px}.word-picker button[aria-pressed=true]{background:#315e4d;color:white}.footer{font-size:12px;text-align:center;color:#879083;margin-top:26px}.slow{font-size:13px;display:flex;align-items:center;gap:6px;white-space:nowrap}.slow input{accent-color:#315e4d;width:17px;height:17px}.status{min-height:28px;color:#68796b;font-size:14px;margin-top:15px}.quiz-title{font-size:25px;margin:22px 0}.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:25px}.choice{font-size:36px;font-weight:750;background:#eff1e7;color:#315e4d;padding:22px;border-radius:17px;border:3px solid transparent}.choice.correct{background:#dfefd8;border-color:#78a268}.choice.wrong{background:#fff0dc;border-color:#d8a466}[hidden]{display:none!important}@media(max-width:440px){body{padding:20px 12px}.card{padding:23px 15px}.letter{min-width:54px;padding:6px 8px 13px;border-radius:15px}.letters{gap:5px}.tabs .tab{padding:10px 14px}.brand{font-size:17px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="stylesheet" href="party.css?v=1">
+</head>
+<body>
+<div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+<main>
+<header><div class="brand"><span aria-hidden="true">🌈</span> Little word cards</div><label class="slow"><input id="slow" type="checkbox"> Slow sound</label></header>
+<div class="party-banner">
+<svg class="rainbow" viewBox="0 0 240 130" aria-hidden="true"><g fill="none" stroke-width="13"><path stroke="#ff78b5" d="M25 110a95 95 0 0 1 190 0"/><path stroke="#ffa85b" d="M38 110a82 82 0 0 1 164 0"/><path stroke="#ffda62" d="M51 110a69 69 0 0 1 138 0"/><path stroke="#79d9b0" d="M64 110a56 56 0 0 1 112 0"/><path stroke="#77c8fa" d="M77 110a43 43 0 0 1 86 0"/><path stroke="#b99aef" d="M90 110a30 30 0 0 1 60 0"/></g><g fill="white"><ellipse cx="30" cy="112" rx="28" ry="14"/><circle cx="24" cy="101" r="15"/><circle cx="42" cy="106" r="12"/><ellipse cx="211" cy="112" rx="28" ry="14"/><circle cx="204" cy="101" r="15"/><circle cx="222" cy="105" r="12"/></g></svg>
+<span class="party-sparkle" aria-hidden="true">✦</span>
+<div class="balloon-bunch" aria-label="Balloons to pop for fun">
+<button class="balloon balloon-pink" aria-label="Pop the pink balloon"></button>
+<button class="balloon balloon-purple" aria-label="Pop the purple balloon"></button>
+<button class="balloon balloon-blue" aria-label="Pop the blue balloon"></button>
+</div>
+<span class="banner-caption">a little word party!</span>
+</div>
+<h1>A rainbow of little words!</h1>
+<p class="intro">Listen, tap, and let your learning take flight! <span aria-hidden="true">🎈</span></p>
+<div class="tabs" role="tablist" aria-label="Activity" style="margin-bottom:20px">
+<button id="learnTab" class="tab" role="tab" aria-selected="true" aria-controls="learn">Explore cards</button>
+<button id="quizTab" class="tab" role="tab" aria-selected="false" aria-controls="quiz" tabindex="-1">Listen & find</button>
+</div>
+<section id="learn" role="tabpanel" aria-labelledby="learnTab">
+<div class="card">
+<div class="eyebrow"><span aria-hidden="true">✨</span> Meet the word <span aria-hidden="true">✨</span></div>
+<div id="letters" class="letters" aria-label="Tap a letter to hear its sound"></div>
+<p class="hint">↑ Tap each letter to hear its sound</p>
+<div class="actions"><button id="hear" class="primary">♫ Hear the word</button><button id="blend" class="secondary">↗ Sound it out</button></div>
+<div id="note" class="note"></div><p id="example" class="example"></p>
+</div>
+<div class="navigation"><button id="prev" aria-label="Previous word">← Back</button><span id="counter" class="counter"></span><button id="next" aria-label="Next word">Next →</button></div>
+<nav id="picker" class="word-picker" aria-label="Choose a word"></nav>
+</section>
+<section id="quiz" role="tabpanel" aria-labelledby="quizTab" hidden>
+<div class="card"><div class="eyebrow">🌟 A little listening game 🌟</div><h2 class="quiz-title">Which word do you hear?</h2><button id="listenQuiz" class="primary">♫ Listen to the word</button><div id="choices" class="choices"></div><p id="feedback" role="status">Tap Listen, then choose a word.</p><button id="nextQuiz" class="secondary" hidden>Another word →</button></div>
+</section>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<p class="footer">American English · Real sound clips, not letter names · No sign-in, no tracking</p>
+</main>
+<script>
+const words = [
+ {word:'as', letters:[['a','short-a','/æ/'],['s','z','/z/']], note:'The a is short, like a in apple. The s sounds like /z/, like a buzzing bee.', example:'I am <strong>as</strong> tall as you.'},
+ {word:'it', letters:[['i','short-i','/ɪ/'],['t','t','/t/']], note:'The i is short, like i in sit. Finish with a quick /t/.', example:'<strong>It</strong> is a sunny day.'},
+ {word:'at', letters:[['a','short-a','/æ/'],['t','t','/t/']], note:'The a has the same short sound as a in as and have.', example:'Look <strong>at</strong> the cat.'},
+ {word:'have', letters:[['h','h','/h/'],['a','short-a','/æ/'],['v','v','/v/'],['e',null,'silent']], note:'Have is a special word: a is short, just like in as. The e is silent; it does not make the a say its name.', example:'I <strong>have</strong> a little dog.'},
+ {word:'a', letters:[['a','long-a','/eɪ/']], note:'By itself, a can say its name: “ay.” In a sentence, it is often a soft “uh” /ə/. This is different from the short a in as and have.', example:'I see <strong>a</strong> cat.', alternate:true},
+ {word:'to', letters:[['t','t','/t/'],['o','oo','/uː/']], note:'Here, o sounds like “oo” in moon. In quick sentences, to can also sound like “tuh.”', example:'Let’s go <strong>to</strong> the park.'},
+ {word:'and', letters:[['a','short-a','/æ/'],['n','n','/n/'],['d','d','/d/']], note:'Start with the short a, like a in as and have. Then add /n/ and a quick /d/.', example:'You <strong>and</strong> me.'}
+];
+const $ = id => document.getElementById(id);
+// Reuse one player so iPhone Safari keeps the tap-granted audio permission
+// when Sound it out advances to the next clip.
+const player = new Audio(); player.preload='auto'; player.setAttribute('playsinline','');
+let index=0, generation=0, activeAudio=null, finishAudio=null, quizWord=null, lastQuiz=null;
+function stop(){ generation++; if(activeAudio){activeAudio.pause();activeAudio=null;} if(finishAudio){finishAudio(false);finishAudio=null;} document.querySelectorAll('.playing').forEach(el=>el.classList.remove('playing')); }
+function clip(path, token=generation){
+ return new Promise(resolve=>{
+  if(token!==generation) return resolve(false);
+  const audio=player; audio.src='audio/'+path+'.mp3'; activeAudio=audio;
+  audio.playbackRate=$('slow').checked?0.75:1; audio.preservesPitch=true;
+  let done=false;
+  const finish=ok=>{if(done)return;done=true;if(activeAudio===audio)activeAudio=null;if(finishAudio===finish)finishAudio=null;resolve(ok);};
+  finishAudio=finish;audio.onended=()=>finish(true);
+  const failed=()=>{if(token===generation)$('status').textContent='Sound could not play. Please tap again and check your volume.';finish(false);};
+  audio.onerror=failed; audio.play().catch(failed);
+ });
+}
+function speakWord(word){stop();$('status').textContent='Listening: '+word;return clip('word-'+word);}
+async function sound(letter,button){
+ stop();const token=generation;
+ if(!letter[1]){$('status').textContent='The e in have is silent. It makes no sound.';return;}
+ $('status').textContent=letter[0]+' sounds like '+letter[2];button.classList.add('playing');
+ await clip('sound-'+letter[1],token);if(token===generation)button.classList.remove('playing');
+}
+function render(){
+ stop();const w=words[index];$('status').textContent='';$('letters').replaceChildren();
+ w.letters.forEach(letter=>{const b=document.createElement('button');b.className='letter'+('aeiou'.includes(letter[0])?' vowel':'')+(!letter[1]?' silent':'');b.setAttribute('aria-label',letter[0]+': '+(letter[1]?'hear '+letter[2]:'silent, no sound'));b.innerHTML=letter[0]+'<span class="sound-label">'+letter[2]+'</span>';b.onclick=()=>sound(letter,b);$('letters').append(b);});
+ $('note').textContent=w.note;
+ if(w.alternate){const b=document.createElement('button');b.className='secondary';b.style.cssText='display:block;margin-top:10px';b.textContent='♫ Hear soft a: “uh”';b.onclick=()=>{stop();$('status').textContent='The soft a: /ə/';clip('sound-schwa');};$('note').append(b);}
+ $('example').innerHTML=w.example;$('counter').textContent=(index+1)+' / '+words.length;
+ [...$('picker').children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));
+}
+words.forEach((w,i)=>{const b=document.createElement('button');b.textContent=w.word;b.onclick=()=>{index=i;render();};$('picker').append(b);});
+$('prev').onclick=()=>{index=(index+words.length-1)%words.length;render();};
+$('next').onclick=()=>{index=(index+1)%words.length;render();};
+$('hear').onclick=()=>speakWord(words[index].word);
+$('blend').onclick=async()=>{
+ stop();const token=generation,w=words[index],buttons=[...$('letters').children];
+ $('status').textContent='Listen to the sounds, then the whole word.';
+ for(let i=0;i<w.letters.length;i++){
+  if(token!==generation)return;const l=w.letters[i];if(!l[1])continue;
+  buttons[i].classList.add('playing');const ok=await clip('sound-'+l[1],token);buttons[i].classList.remove('playing');if(!ok)return;
+  await new Promise(r=>setTimeout(r,160));
+ }
+ if(token===generation)await clip('word-'+w.word,token);
+};
+function shuffle(items){const result=[...items];for(let i=result.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[result[i],result[j]]=[result[j],result[i]];}return result;}
+function newQuiz(){
+ stop();$('status').textContent='';quizWord=shuffle(words.filter(w=>w.word!==lastQuiz))[0];lastQuiz=quizWord.word;
+ $('choices').replaceChildren();$('feedback').textContent='Tap Listen, then choose a word.';$('nextQuiz').hidden=true;
+ const options=shuffle([quizWord,...shuffle(words.filter(w=>w!==quizWord)).slice(0,3)]);
+ options.forEach(w=>{const b=document.createElement('button');b.className='choice';b.textContent=w.word;
+ b.onclick=()=>{if(w===quizWord){celebrate();b.classList.add('correct');$('feedback').textContent='★ Yes! You found “'+w.word+'.”';$('nextQuiz').hidden=false;[...$('choices').children].forEach(c=>c.disabled=true);speakWord(w.word);}else{b.classList.add('wrong');$('feedback').textContent='Not quite. Listen again and try another word.';speakWord(quizWord.word);}};$('choices').append(b);});
+}
+function tab(which){stop();const learn=which==='learn';$('learn').hidden=!learn;$('quiz').hidden=learn;['learn','quiz'].forEach(id=>{$(id+'Tab').setAttribute('aria-selected',String(id===which));$(id+'Tab').tabIndex=id===which?0:-1;});$('status').textContent='';if(!learn)newQuiz();}
+$('learnTab').onclick=()=>tab('learn');$('quizTab').onclick=()=>tab('quiz');
+document.querySelector('.tabs').onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const which=e.key==='Home'?'learn':e.key==='End'?'quiz':$('learn').hidden?'learn':'quiz';tab(which);$(which+'Tab').focus();}};
+$('listenQuiz').onclick=()=>speakWord(quizWord.word);$('nextQuiz').onclick=()=>{newQuiz();speakWord(quizWord.word);};
+document.addEventListener('keydown',e=>{if(e.target.matches('input,button')||!$('quiz').hidden)return;if(e.key==='ArrowRight')$('next').click();if(e.key==='ArrowLeft')$('prev').click();if(e.code==='Space'){e.preventDefault();$('hear').click();}});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stop();});
+function celebrate(x=innerWidth/2,y=innerHeight*0.4){
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ const colors=['#f85da8','#ffb44d','#ffdc62','#66d2ac','#64bdfa','#ad83ed'];
+ for(let i=0;i<26;i++){
+  const bit=document.createElement('span');bit.className='confetti';bit.setAttribute('aria-hidden','true');
+  bit.style.cssText=`left:${x}px;top:${y}px;background:${colors[i%colors.length]};--dx:${(Math.random()-.5)*320}px;--dy:${80+Math.random()*230}px;--spin:${(Math.random()-.5)*900}deg;animation-delay:${Math.random()*100}ms`;
+  $('confettiLayer').append(bit);setTimeout(()=>bit.remove(),1700);
+ }
+}
+document.querySelectorAll('.balloon').forEach(b=>b.onclick=()=>{
+ const r=b.getBoundingClientRect();celebrate(r.left+r.width/2,r.top+r.height/2);b.classList.add('popped');b.disabled=true;
+ setTimeout(()=>{b.classList.remove('popped');b.disabled=false;},1400);
+});
+render();
+</script>
+</body>
+</html>
